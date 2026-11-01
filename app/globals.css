@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root {
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --surface: #ffffff;
+  --surface-subtle: #f4f4f5;
+  --border: #e5e7eb;
+  --border-subtle: #f3f4f6;
+  --ink: #0a0a0a;
+  --ink-inverted: #ffffff;
+  --muted: #71717a;
+  --muted-light: #a1a1aa;
+
+  --brand-lime: #a3e635;
+  --brand-lime-hover: #84cc16;
+  --brand-lime-text: #0a0a0a;
+
+  --positive-emerald: #059669;
+  --positive-mint: #ecfdf5;
+  --positive-border: #a7f3d0;
+
+  --negative-red: #ef4444;
+  --negative-tint: #fef2f2;
+  --negative-border: #fecaca;
+
+  --warning-amber: #d97706;
+  --warning-cream: #fffbeb;
+  --warning-border: #fde68a;
+
+  --info-blue: #2563eb;
+  --info-tint: #eff6ff;
+  --info-border: #bfdbfe;
+
+  --grid-dot-color: rgba(0, 0, 0, 0.07);
+}
+
+[data-theme="dark"] {
+  --background: #09090b;
+  --foreground: #ededed;
+  --surface: #141416;
+  --surface-subtle: #1f1f23;
+  --border: #27272a;
+  --border-subtle: #222226;
+  --ink: #f4f4f5;
+  --ink-inverted: #0a0a0a;
+  --muted: #a1a1aa;
+  --muted-light: #71717a;
+
+  --brand-lime: #a3e635;
+  --brand-lime-hover: #bef264;
+  --brand-lime-text: #0a0a0a;
+
+  --positive-emerald: #10b981;
+  --positive-mint: rgba(6, 78, 59, 0.25);
+  --positive-border: #065f46;
+
+  --negative-red: #f87171;
+  --negative-tint: rgba(69, 10, 10, 0.25);
+  --negative-border: #7f1d1d;
+
+  --warning-amber: #fbbf24;
+  --warning-cream: rgba(69, 26, 3, 0.25);
+  --warning-border: #78350f;
+
+  --info-blue: #60a5fa;
+  --info-tint: rgba(30, 58, 138, 0.25);
+  --info-border: #1e40af;
+
+  --grid-dot-color: rgba(255, 255, 255, 0.07);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-ink: var(--ink);
+  --color-ink-inverted: var(--ink-inverted);
+  --color-muted: var(--muted);
+  --color-muted-light: var(--muted-light);
+
+  --color-brand-lime: var(--brand-lime);
+  --color-brand-lime-hover: var(--brand-lime-hover);
+  --color-brand-lime-text: var(--brand-lime-text);
+
+  --color-positive-emerald: var(--positive-emerald);
+  --color-positive-mint: var(--positive-mint);
+  --color-positive-border: var(--positive-border);
+
+  --color-negative-red: var(--negative-red);
+  --color-negative-tint: var(--negative-tint);
+  --color-negative-border: var(--negative-border);
+
+  --color-warning-amber: var(--warning-amber);
+  --color-warning-cream: var(--warning-cream);
+  --color-warning-border: var(--warning-border);
+
+  --color-info-blue: var(--info-blue);
+  --color-info-tint: var(--info-tint);
+  --color-info-border: var(--info-border);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* Subtle dotted grid background matching Screenshot 1 */
+.bg-grid-dots {
+  background-image: radial-gradient(circle, var(--grid-dot-color) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+/* Clean scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
