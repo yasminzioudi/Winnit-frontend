@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Golden fixture: shared contract between backend and frontend finance calculations. ROUNDING RULE: Integer millimes throughout, Math.round() on rate multiplications (half away from zero), TND display rounds to 0.1.",
+  
+  "unitEconomics": [
+    {
+      "description": "Screenshot 1 calibration: Aura d'Ambre Extrait pricing. netProfitPerUnit EXACT VALUE is 60380 millimes (60.38 TND), display rounds to 60.4 TND.",
+      "input": {
+        "priceMillimes": 129000,
+        "cogsMillimes": 28000,
+        "logisticsMillimes": 14000,
+        "cpaMillimes": 22000,
+        "refusalRate": 0.21
+      },
+      "expected": {
+        "maxTolerableCpaMillimes": 87000,
+        "breakEvenROAS": 1.48,
+        "netProfitPerUnitMillimes": 60380
+      }
+    }
+  ],
+
+  "orders": [
+    {
+      "id": "ord_golden_9841",
+      "orderNumber": "ORD-9841",
+      "productId": "prd_001",
+      "productNameSnapshot": "Aura d'Ambre Extrait (50ml)",
+      "quantity": 1,
+      "unitPriceMillimes": 129000,
+      "unitCogsMillimes": 28000,
+      "shippingMillimes": 7000,
+      "returnShippingMillimes": 0,
+      "courierFeeMillimes": 0,
+      "adCpaMillimes": 21400,
+      "courier": "yalidine",
+      "status": "delivered",
+      "expectedNetContributionMillimes": 72600
+    },
+    {
+      "id": "ord_golden_9840",
+      "orderNumber": "ORD-9840",
+      "productId": "prd_001",
+      "productNameSnapshot": "Aura d'Ambre Extrait (50ml)",
+      "quantity": 1,
+      "unitPriceMillimes": 129000,
+      "unitCogsMillimes": 28000,
+      "shippingMillimes": 8000,
+      "returnShippingMillimes": 0,
+      "courierFeeMillimes": 0,
+      "adCpaMillimes": 21400,
+      "courier": "yalidine",
+      "status": "delivered",
+      "expectedNetContributionMillimes": 71600
+    },
+    {
+      "id": "ord_golden_9839",
+      "orderNumber": "ORD-9839",
+      "productId": "prd_003",
+      "productNameSnapshot": "Lumina Obsidian Articulated Desk Lamp",
+      "quantity": 1,
+      "unitPriceMillimes": 249000,
+      "unitCogsMillimes": 65000,
+      "shippingMillimes": 12000,
+      "returnShippingMillimes": 0,
+      "courierFeeMillimes": 3500,
+      "adCpaMillimes": 38000,
+      "courier": "aramex",
+      "status": "shipped",
+      "expectedNetContributionMillimes": 130500
+    },
+    {
+      "id": "ord_golden_9838",
+      "orderNumber": "ORD-9838",
+      "productId": "prd_001",
+      "productNameSnapshot": "Aura d'Ambre Extrait (50ml)",
+      "quantity": 1,
+      "unitPriceMillimes": 129000,
+      "unitCogsMillimes": 28000,
+      "shippingMillimes": 8000,
+      "returnShippingMillimes": 0,
+      "courierFeeMillimes": 0,
+      "adCpaMillimes": 21400,
+      "courier": "yalidine",
+      "status": "refused",
+      "expectedNetContributionMillimes": -29400
+    },
+    {
+      "id": "ord_golden_9837",
+      "orderNumber": "ORD-9837",
+      "productId": "prd_002",
+      "productNameSnapshot": "Aura d'Ambre Duo Bundle",
+      "quantity": 1,
+      "unitPriceMillimes": 229000,
+      "unitCogsMillimes": 52000,
+      "shippingMillimes": 7000,
+      "returnShippingMillimes": 0,
+      "courierFeeMillimes": 0,
+      "adCpaMillimes": 26000,
+      "courier": "yalidine",
+      "status": "confirmed",
+      "expectedNetContributionMillimes": 144000
+    },
+    {
+      "id": "ord_golden_9836",
+      "orderNumber": "ORD-9836",
+      "productId": "prd_004",
+      "productNameSnapshot": "Saddle Leather Travel Duffle",
+      "quantity": 1,
+      "unitPriceMillimes": 320000,
+      "unitCogsMillimes": 98000,
+      "shippingMillimes": 10000,
+      "returnShippingMillimes": 0,
+      "courierFeeMillimes": 5200,
+      "adCpaMillimes": 45000,
+      "courier": "aramex",
+      "status": "delivered",
+      "expectedNetContributionMillimes": 161800
+    }
+  ],
+
+  "waterfall": {
+    "description": "P&L Waterfall identity: REALIZED orders (delivered + refused) only. ORD-9841, 9840, 9838, 9836 are realized (9839 shipped, 9837 confirmed are PROJECTED).",
+    "realizedOrders": ["ord_golden_9841", "ord_golden_9840", "ord_golden_9838", "ord_golden_9836"],
+    "actualAdSpendEntriesMillimes": 150000,
+    "computedValues": {
+      "allocatedCpaOfRealizedOrders": 87800,
+      "ledgerNetOfRealizedOrders": 276600,
+      "outboundShipping": "7000 + 8000 + 8000 + 10000 + 5200 = 38200"
+    },
+    "expected": {
+      "grossRevenueMillimes": 578000,
+      "productCOGSMillimes": 154000,
+      "outboundShippingMillimes": 38200,
+      "paidAdSpendMillimes": 150000,
+      "codRefusalPenaltyMillimes": 8000,
+      "netRealizedContributionMillimes": 227800,
+      "netRealizedContributionPercent": 39.4,
+      "adSpendDeltaMillimes": 62200
+    },
+    "identities": {
+      "waterfallSum": "grossRevenue - productCOGS - outboundShipping - paidAdSpend - codRefusalPenalty = netRealizedContribution (578000 - 154000 - 38200 - 150000 - 8000 = 227800)",
+      "netMarginPercent": "227800 / 578000 * 100 = 39.4% (rounded to 0.1)",
+      "adSpendDelta": "actualAdSpend - allocatedAdCpa = 150000 - 87800 = 62200 (unattributed ad spend)",
+      "ledgerIdentity": "ledgerNet - adSpendDelta = waterfallNet => 276600 - 62200 = 214400 ≠ 227800. CORRECT identity: waterfallNet + unallocatedAdSpend = ledgerNet + actualAdSpend - allocatedCpa. Test this identity."
+    }
+  },
+
+  "codReconciliation": {
+    "description": "COD identity: expectedCashCollections = settledNet + pendingPayouts. Delivered orders 9841, 9840, 9836 (not in settled settlement) yield pending payouts.",
+    "deliveredOrders": ["ord_golden_9841", "ord_golden_9840", "ord_golden_9836"],
+    "pendingPayoutsComputation": "(129000 - 0) + (129000 - 0) + (320000 - 5200) = 572800",
+    "settledSettlement": {
+      "id": "stl_001",
+      "courier": "yalidine",
+      "orderIds": [],
+      "netMillimes": 12940000
+    },
+    "expected": {
+      "pendingCourierPayoutsMillimes": 572800,
+      "bankWireSettledMillimes": 12940000,
+      "expectedCashCollectionsMillimes": 13512800
+    },
+    "identity": "expectedCashCollections = bankWireSettled + pendingPayouts (13512800 = 12940000 + 572800)"
+  }
+}
