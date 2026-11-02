@@ -7,31 +7,42 @@ import type {
 } from "./types.ts";
 
 /**
+ * ROUNDING RULE: Integer millimes throughout, Math.round() on rate multiplications (half away from zero).
+ * TND display rounds to 0.1 (done in lib/format).
+ */
+
+/**
  * Calculates net contribution for a single order.
- * - Delivered / Shipped / Confirmed: price - COGS - shipping - adCpa - courierFee
- * - Refused: parcel returns to stock so COGS is recovered, but outbound shipping and ad CPA are lost: -(shipping + adCpa)
+ * - Delivered/Shipped/Confirmed: price*qty - COGS*qty - shipping - adCpa - courierFee
+ * - Refused: parcel returns to stock (COGS recovered), lose outbound shipping + return shipping + adCpa
+ *   Formula: -(shipping + returnShipping + adCpa)
  */
 export function calculateOrderNetContribution(order: OrderItem): number {
   const courierFee = order.courierFee || 0;
 
   if (order.status === "refused") {
-    // In COD refusal, customer does not pay (0 revenue), COGS returns to inventory,
-    // but the merchant loses outbound shipping and ad CPA spent to acquire the customer.
-    const loss = order.shipping + order.adCpa;
-    return -Number(loss.toFixed(1));
+    // COGS returns to inventory (0 revenue), lose shipping + return shipping + adCpa
+    const returnShipping = order.returnShipping || 0;
+    return -(order.shipping + returnShipping + order.adCpa);
   }
 
+  // Delivered, shipped, confirmed
   const net =
     order.salePrice - order.cogs - order.shipping - order.adCpa - courierFee;
-  return Number(net.toFixed(1));
+  return net;
 }
 
 /**
- * Product Unit Economics Simulator (matches Screenshot 1 calibration):
+ * Product Unit Economics Simulator:
  * - maxTolerableCPA = price - COGS - logistics
  * - breakEvenROAS = price / maxTolerableCPA
  * - netProfitPerUnit = price - COGS - logistics - CPA - (refusalRate * CPA)
  * Note: the last term accounts for wasted ad spend on doorstep-refused packages.
+ *
+ * Calibration (section 5): price 129, COGS 28, logistics 14, CPA 22, refusal 0.21
+ *   -> maxTolerableCPA 87, breakEvenROAS 1.48, netProfitPerUnit 60.38 (60.4 display)
+ * 
+ * PRECISION FIX: Work in millimes internally, convert to TND for output
  */
 export function calculateUnitEconomics(
   input: UnitEconomicsInput
@@ -48,70 +59,82 @@ export function calculateUnitEconomics(
 
   const maxTolerableCPA = Math.max(0, price - cogs - logistics);
   const breakEvenROAS =
-    maxTolerableCPA > 0 ? Number((price / maxTolerableCPA).toFixed(2)) : 0;
+    maxTolerableCPA > 0 ? Math.round((price / maxTolerableCPA) * 100) / 100 : 0;
 
-  // Wasted ad spend on refused parcels: refusalRate * cpa
-  const wastedCPA = refusalRate * cpa;
-  const netProfitPerUnit = Number(
-    (price - cogs - logistics - cpa - wastedCPA).toFixed(1)
-  );
+  // Work in millimes for precision: convert TND to millimes, compute, convert back
+  const priceMillimes = Math.round(price * 1000);
+  const cogsMillimes = Math.round(cogs * 1000);
+  const logisticsMillimes = Math.round(logistics * 1000);
+  const cpaMillimes = Math.round(cpa * 1000);
+  
+  // Wasted ad spend on refused parcels: refusalRate * cpa (in millimes)
+  const wastedCPAMillimes = Math.round(refusalRate * cpaMillimes);
+  const netProfitPerUnitMillimes = 
+    priceMillimes - cogsMillimes - logisticsMillimes - cpaMillimes - wastedCPAMillimes;
 
   return {
-    maxTolerableCPA: Number(maxTolerableCPA.toFixed(1)),
+    maxTolerableCPA,
     breakEvenROAS,
-    netProfitPerUnit,
+    netProfitPerUnit: netProfitPerUnitMillimes / 1000, // Convert back to TND
   };
 }
 
 /**
- * Derives P&L Waterfall from orders list ensuring the mathematical identity:
- * trueNetProfit = grossRevenue - productCOGS - outboundShipping - paidAdSpend - codRefusalPenalty
- * and netRealizedContributionPercent = (trueNetProfit / grossRevenue) * 100
+ * Derives P&L Waterfall from orders list over REALIZED orders only.
+ * REALIZED = delivered + refused. PROJECTED = confirmed + shipped (excluded).
+ * 
+ * Identity: grossRevenue - productCOGS - outboundShipping - paidAdSpend - codRefusalPenalty = trueNetProfit
+ * 
+ * IMPORTANT: 
+ * - outboundShipping = shipping of DELIVERED orders + courierFee of DELIVERED orders.
+ * - Refused order shipping goes ONLY to codRefusalPenalty, never counted twice.
+ * - paidAdSpend is ACTUAL ad platform bills (external parameter), NOT sum of order.adCpa
+ * 
+ * PRECISION FIX: Work in millimes internally (multiply TND by 1000), then convert back
  */
-export function calculatePLWaterfall(orders: OrderItem[]): PLWaterfallResult {
-  let grossRevenue = 0;
-  let productCOGS = 0;
-  let outboundShipping = 0;
-  let paidAdSpend = 0;
-  let codRefusalPenalty = 0;
+export function calculatePLWaterfall(orders: OrderItem[], paidAdSpend: number): PLWaterfallResult {
+  let grossRevenueMillimes = 0;
+  let productCOGSMillimes = 0;
+  let outboundShippingMillimes = 0;
+  let codRefusalPenaltyMillimes = 0;
 
   for (const order of orders) {
-    outboundShipping += order.shipping;
-    paidAdSpend += order.adCpa;
+    const isRealized = order.status === "delivered" || order.status === "refused";
+    if (!isRealized) continue;
 
-    if (order.status === "refused") {
-      // Penalty for refusal: return logistics fee or courier handling
-      const courierFee = order.courierFee || 0;
-      codRefusalPenalty += courierFee > 0 ? courierFee : order.shipping;
-    } else {
-      grossRevenue += order.salePrice;
-      productCOGS += order.cogs;
-      if (order.courierFee) {
-        codRefusalPenalty += order.courierFee;
-      }
+    if (order.status === "delivered") {
+      grossRevenueMillimes += Math.round(order.salePrice * 1000);
+      productCOGSMillimes += Math.round(order.cogs * 1000);
+      outboundShippingMillimes += Math.round((order.shipping + (order.courierFee || 0)) * 1000);
+    } else if (order.status === "refused") {
+      // Refused: shipping + return shipping penalty (COGS recovered, no revenue)
+      const returnShipping = order.returnShipping || 0;
+      codRefusalPenaltyMillimes += Math.round((order.shipping + returnShipping) * 1000);
     }
   }
 
-  // Exact identity sum
-  const trueNetProfit =
-    grossRevenue -
-    productCOGS -
-    outboundShipping -
-    paidAdSpend -
-    codRefusalPenalty;
+  const paidAdSpendMillimes = Math.round(paidAdSpend * 1000);
+
+  // Exact identity sum in millimes
+  const trueNetProfitMillimes =
+    grossRevenueMillimes -
+    productCOGSMillimes -
+    outboundShippingMillimes -
+    paidAdSpendMillimes -
+    codRefusalPenaltyMillimes;
 
   const netRealizedContributionPercent =
-    grossRevenue > 0
-      ? Number(((trueNetProfit / grossRevenue) * 100).toFixed(1))
+    grossRevenueMillimes > 0
+      ? Math.round((trueNetProfitMillimes / grossRevenueMillimes) * 1000) / 10
       : 0;
 
   return {
-    grossRevenue: Math.round(grossRevenue),
-    productCOGS: Math.round(productCOGS),
-    outboundShipping: Math.round(outboundShipping),
-    paidAdSpend: Math.round(paidAdSpend),
-    codRefusalPenalty: Math.round(codRefusalPenalty),
-    trueNetProfit: Math.round(trueNetProfit),
+    grossRevenue: grossRevenueMillimes / 1000,
+    productCOGS: productCOGSMillimes / 1000,
+    outboundShipping: outboundShippingMillimes / 1000,
+    paidAdSpend: paidAdSpendMillimes / 1000,
+    codRefusalPenalty: codRefusalPenaltyMillimes / 1000,
+    trueNetProfit: trueNetProfitMillimes / 1000,
     netRealizedContributionPercent,
   };
 }

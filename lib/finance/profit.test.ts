@@ -1,5 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
 import type { OrderItem } from "./types.ts";
 import {
   calculateOrderNetContribution,
@@ -8,193 +12,128 @@ import {
   calculateCourierReconciliation,
 } from "./profit.ts";
 
-test("Product Profit Simulator - calibration matches Screenshot 1", () => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load golden fixture
+const goldenFixture = JSON.parse(
+  readFileSync(join(__dirname, "../../contracts-golden.json"), "utf8")
+);
+
+test("Unit Economics - Golden Fixture calibration", () => {
+  const testCase = goldenFixture.unitEconomics[0];
+  const input = testCase.input;
+
+  // Convert millimes to TND
   const result = calculateUnitEconomics({
-    price: 129,
-    cogs: 28,
-    logistics: 14,
-    cpa: 22,
-    refusalRate: 0.21,
+    price: input.priceMillimes / 1000,
+    cogs: input.cogsMillimes / 1000,
+    logistics: input.logisticsMillimes / 1000,
+    cpa: input.cpaMillimes / 1000,
+    refusalRate: input.refusalRate,
   });
 
-  // maxTolerableCPA = 129 - 28 - 14 = 87.0
-  assert.equal(result.maxTolerableCPA, 87.0);
-
-  // breakEvenROAS = 129 / 87.0 = 1.4827... -> 1.48
-  assert.equal(result.breakEvenROAS, 1.48);
-
-  // netProfitPerUnit = 129 - 28 - 14 - 22 - (0.21 * 22) = 60.38 -> 60.4
-  assert.equal(result.netProfitPerUnit, 60.4);
+  const expected = testCase.expected;
+  // Compare in TND (frontend works in TND, so convert millimes expectations)
+  assert.equal(result.maxTolerableCPA, expected.maxTolerableCpaMillimes / 1000);
+  assert.equal(result.breakEvenROAS, expected.breakEvenROAS);
+  // Frontend returns TND, compare with millimes converted to TND (60380 millimes = 60.38 TND)
+  assert.equal(result.netProfitPerUnit, expected.netProfitPerUnitMillimes / 1000);
 });
 
-test("Order-Level Unit Economics Ledger - calibration matches Screenshot 2", () => {
-  // ORD-9841: Yassine M. | Aura d'Ambre Extrait | Price 129, COGS 28, Ship 7, CPA 21.4 -> +72.6
-  const ord9841: OrderItem = {
-    id: "1",
-    orderNumber: "ORD-9841",
-    customerName: "Yassine M.",
-    city: "Tunis / Marsa",
-    productName: "Aura d'Ambre Extrait (50ml)",
-    salePrice: 129,
-    cogs: 28,
-    shipping: 7,
-    adCpa: 21.4,
-    status: "delivered",
-    createdAt: "2026-10-26T10:00:00Z",
-  };
-  assert.equal(calculateOrderNetContribution(ord9841), 72.6);
+test("Order-Level Unit Economics - Golden Fixture matches", () => {
+  for (const orderData of goldenFixture.orders) {
+    const order: OrderItem = {
+      id: orderData.id,
+      orderNumber: orderData.orderNumber,
+      customerName: "",
+      city: "",
+      productName: orderData.productNameSnapshot,
+      salePrice: orderData.unitPriceMillimes / 1000,
+      cogs: orderData.unitCogsMillimes / 1000,
+      shipping: orderData.shippingMillimes / 1000,
+      returnShipping: orderData.returnShippingMillimes / 1000,
+      adCpa: orderData.adCpaMillimes / 1000,
+      courierFee: orderData.courierFeeMillimes / 1000,
+      status: orderData.status,
+      createdAt: "",
+    };
 
-  // ORD-9840: Sarra B. | Aura d'Ambre Extrait | Price 129, COGS 28, Ship 8, CPA 21.4 -> +71.6
-  const ord9840: OrderItem = {
-    id: "2",
-    orderNumber: "ORD-9840",
-    customerName: "Sarra B.",
-    city: "Sousse",
-    productName: "Aura d'Ambre Extrait (50ml)",
-    salePrice: 129,
-    cogs: 28,
-    shipping: 8,
-    adCpa: 21.4,
-    status: "delivered",
-    createdAt: "2026-10-26T09:30:00Z",
-  };
-  assert.equal(calculateOrderNetContribution(ord9840), 71.6);
-
-  // ORD-9839: Karim T. | Lumina Desk Lamp | Price 249, COGS 65, Ship 12, CPA 38, courierFee 3.5 -> +130.5
-  const ord9839: OrderItem = {
-    id: "3",
-    orderNumber: "ORD-9839",
-    customerName: "Karim T.",
-    city: "Sfax",
-    productName: "Lumina Obsidian Articulated Desk Lamp",
-    salePrice: 249,
-    cogs: 65,
-    shipping: 12,
-    adCpa: 38,
-    courierFee: 3.5,
-    status: "shipped",
-    createdAt: "2026-10-26T08:15:00Z",
-  };
-  assert.equal(calculateOrderNetContribution(ord9839), 130.5);
-
-  // ORD-9838: Amine K. | Refused order | Ship 8, CPA 21.4 -> -29.4
-  const ord9838: OrderItem = {
-    id: "4",
-    orderNumber: "ORD-9838",
-    customerName: "Amine K.",
-    city: "Bizerte",
-    productName: "Aura d'Ambre Extrait (50ml)",
-    salePrice: 129,
-    cogs: 28,
-    shipping: 8,
-    adCpa: 21.4,
-    status: "refused",
-    createdAt: "2026-10-25T14:20:00Z",
-  };
-  assert.equal(calculateOrderNetContribution(ord9838), -29.4);
-
-  // ORD-9837: Nadia F. | Aura Duo Bundle | Price 229, COGS 52, Ship 7, CPA 26 -> +144.0
-  const ord9837: OrderItem = {
-    id: "5",
-    orderNumber: "ORD-9837",
-    customerName: "Nadia F.",
-    city: "Nabeul",
-    productName: "Aura d'Ambre Duo Bundle",
-    salePrice: 229,
-    cogs: 52,
-    shipping: 7,
-    adCpa: 26,
-    status: "confirmed",
-    createdAt: "2026-10-25T11:00:00Z",
-  };
-  assert.equal(calculateOrderNetContribution(ord9837), 144.0);
-
-  // ORD-9836: Mehdi Z. | Saddle Leather Duffle | Price 320, COGS 98, Ship 10, CPA 45, courierFee 5.2 -> +161.8
-  const ord9836: OrderItem = {
-    id: "6",
-    orderNumber: "ORD-9836",
-    customerName: "Mehdi Z.",
-    city: "Tunis / Ennasr",
-    productName: "Saddle Leather Travel Duffle",
-    salePrice: 320,
-    cogs: 98,
-    shipping: 10,
-    adCpa: 45,
-    courierFee: 5.2,
-    status: "delivered",
-    createdAt: "2026-10-24T16:45:00Z",
-  };
-  assert.equal(calculateOrderNetContribution(ord9836), 161.8);
+    const net = calculateOrderNetContribution(order);
+    const expectedNet = orderData.expectedNetContributionMillimes / 1000;
+    assert.equal(Math.round(net * 10) / 10, Math.round(expectedNet * 10) / 10);
+  }
 });
 
-test("Financial Identities & Invariants hold strictly", () => {
-  const sampleOrders: OrderItem[] = [
-    {
-      id: "1",
-      orderNumber: "ORD-1",
-      customerName: "A",
-      city: "Tunis",
-      productName: "Item 1",
-      salePrice: 200,
-      cogs: 50,
-      shipping: 10,
-      adCpa: 30,
-      status: "delivered",
-      createdAt: "2026-10-01",
-    },
-    {
-      id: "2",
-      orderNumber: "ORD-2",
-      customerName: "B",
-      city: "Sousse",
-      productName: "Item 2",
-      salePrice: 150,
-      cogs: 40,
-      shipping: 10,
-      adCpa: 25,
-      status: "refused",
-      createdAt: "2026-10-02",
-    },
-    {
-      id: "3",
-      orderNumber: "ORD-3",
-      customerName: "C",
-      city: "Sfax",
-      productName: "Item 3",
-      salePrice: 300,
-      cogs: 80,
-      shipping: 15,
-      adCpa: 40,
-      courierFee: 5,
-      status: "shipped",
-      createdAt: "2026-10-03",
-    },
-  ];
+test("Waterfall - Golden Fixture matches", () => {
+  const orders: OrderItem[] = goldenFixture.orders.map((o: any) => ({
+    id: o.id,
+    orderNumber: o.orderNumber,
+    customerName: "",
+    city: "",
+    productName: o.productNameSnapshot,
+    salePrice: o.unitPriceMillimes / 1000,
+    cogs: o.unitCogsMillimes / 1000,
+    shipping: o.shippingMillimes / 1000,
+    returnShipping: o.returnShippingMillimes / 1000,
+    adCpa: o.adCpaMillimes / 1000,
+    courierFee: o.courierFeeMillimes / 1000,
+    status: o.status,
+    createdAt: "",
+  }));
 
-  const waterfall = calculatePLWaterfall(sampleOrders);
+  // Use actual ad spend from external ad platform (not sum of order adCpa)
+  const paidAdSpend = goldenFixture.waterfall.actualAdSpendEntriesMillimes / 1000;
+  const waterfall = calculatePLWaterfall(orders, paidAdSpend);
+  const expected = goldenFixture.waterfall.expected;
 
-  // 1. Waterfall steps sum exactly to trueNetProfit
-  const derivedSum =
+  // Frontend returns TND, convert millimes expectations to TND for comparison
+  assert.equal(waterfall.grossRevenue, expected.grossRevenueMillimes / 1000);
+  assert.equal(waterfall.productCOGS, expected.productCOGSMillimes / 1000);
+  assert.equal(waterfall.outboundShipping, expected.outboundShippingMillimes / 1000);
+  assert.equal(waterfall.codRefusalPenalty, expected.codRefusalPenaltyMillimes / 1000);
+  assert.equal(waterfall.trueNetProfit, expected.netRealizedContributionMillimes / 1000);
+  assert.equal(waterfall.netRealizedContributionPercent, expected.netRealizedContributionPercent);
+});
+
+test("Waterfall identity: sum equals netRealizedContribution", () => {
+  const orders: OrderItem[] = goldenFixture.orders.map((o: any) => ({
+    id: o.id,
+    orderNumber: o.orderNumber,
+    customerName: "",
+    city: "",
+    productName: o.productNameSnapshot,
+    salePrice: o.unitPriceMillimes / 1000,
+    cogs: o.unitCogsMillimes / 1000,
+    shipping: o.shippingMillimes / 1000,
+    returnShipping: o.returnShippingMillimes / 1000,
+    adCpa: o.adCpaMillimes / 1000,
+    courierFee: o.courierFeeMillimes / 1000,
+    status: o.status,
+    createdAt: "",
+  }));
+
+  const paidAdSpend = goldenFixture.waterfall.actualAdSpendEntriesMillimes / 1000;
+  const waterfall = calculatePLWaterfall(orders, paidAdSpend);
+
+  const computedNet =
     waterfall.grossRevenue -
     waterfall.productCOGS -
     waterfall.outboundShipping -
     waterfall.paidAdSpend -
     waterfall.codRefusalPenalty;
-  assert.equal(waterfall.trueNetProfit, derivedSum);
 
-  // 2. Net Realized Contribution % = (trueNetProfit / grossRevenue) * 100
-  const expectedPercent = Number(
-    ((waterfall.trueNetProfit / waterfall.grossRevenue) * 100).toFixed(1)
-  );
-  assert.equal(waterfall.netRealizedContributionPercent, expectedPercent);
+  // Both values are in TND, should match exactly
+  assert.equal(waterfall.trueNetProfit, computedNet);
+});
 
-  // 3. Courier reconciliation identity
+test("COD reconciliation identity", () => {
   const reco = calculateCourierReconciliation(12940, 1340);
+  assert.equal(reco.expectedCashCollections, 14280);
   assert.equal(
     reco.expectedCashCollections,
     reco.bankWireSettled + reco.pendingCourierPayouts
   );
-  assert.equal(reco.expectedCashCollections, 14280);
 });
 
 test("Edge cases - zero price and 100% refusal", () => {
@@ -218,6 +157,6 @@ test("Edge cases - zero price and 100% refusal", () => {
     cpa: 20,
     refusalRate: 1.0,
   });
-  // price - cogs - logistics - cpa - 1.0 * cpa = 100 - 25 - 10 - 20 - 20 = 25.0
-  assert.equal(fullRefusal.netProfitPerUnit, 25.0);
+  // 100 - 25 - 10 - 20 - (1.0 * 20) = 25
+  assert.equal(fullRefusal.netProfitPerUnit, 25);
 });

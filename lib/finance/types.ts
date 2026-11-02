@@ -9,6 +9,7 @@ export interface OrderItem {
   salePrice: number;
   cogs: number;
   shipping: number;
+  returnShipping?: number; // Added for reconciled waterfall
   adCpa: number;
   courierFee?: number;
   status: OrderStatus;
