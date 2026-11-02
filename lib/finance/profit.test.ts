@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
-import type { OrderItem } from "./types.ts";
+import type { OrderItem, OrderStatus } from "./types.ts";
 import {
   calculateOrderNetContribution,
   calculateUnitEconomics,
@@ -66,7 +66,20 @@ test("Order-Level Unit Economics - Golden Fixture matches", () => {
 });
 
 test("Waterfall - Golden Fixture matches", () => {
-  const orders: OrderItem[] = goldenFixture.orders.map((o: any) => ({
+  interface GoldenOrder {
+    id: string;
+    orderNumber: string;
+    productNameSnapshot: string;
+    unitPriceMillimes: number;
+    unitCogsMillimes: number;
+    shippingMillimes: number;
+    returnShippingMillimes: number;
+    adCpaMillimes: number;
+    courierFeeMillimes: number;
+    status: OrderStatus;
+  }
+
+  const orders: OrderItem[] = (goldenFixture.orders as GoldenOrder[]).map((o) => ({
     id: o.id,
     orderNumber: o.orderNumber,
     customerName: "",
@@ -97,7 +110,20 @@ test("Waterfall - Golden Fixture matches", () => {
 });
 
 test("Waterfall identity: sum equals netRealizedContribution", () => {
-  const orders: OrderItem[] = goldenFixture.orders.map((o: any) => ({
+  interface GoldenOrder {
+    id: string;
+    orderNumber: string;
+    productNameSnapshot: string;
+    unitPriceMillimes: number;
+    unitCogsMillimes: number;
+    shippingMillimes: number;
+    returnShippingMillimes: number;
+    adCpaMillimes: number;
+    courierFeeMillimes: number;
+    status: OrderStatus;
+  }
+
+  const orders: OrderItem[] = (goldenFixture.orders as GoldenOrder[]).map((o) => ({
     id: o.id,
     orderNumber: o.orderNumber,
     customerName: "",
