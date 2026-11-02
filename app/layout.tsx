@@ -4,6 +4,7 @@ import { ToastProvider } from "@/hooks/useToast";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ToastContainer } from "@/components/ui/Toast";
 import { RegisterSW } from "@/components/RegisterSW";
+import { QueryProvider } from "@/components/providers/QueryProvider";
 
 /*
  * LOCAL FONTS NOTE (SWITCH TO next/font/local IN 5 LINES):
@@ -39,12 +40,14 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-sans bg-background text-foreground min-h-screen">
-        <ToastProvider>
-          <AuthProvider>
-            {children}
-            <ToastContainer />
-          </AuthProvider>
-        </ToastProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <AuthProvider>
+              {children}
+              <ToastContainer />
+            </AuthProvider>
+          </ToastProvider>
+        </QueryProvider>
         <RegisterSW />
       </body>
     </html>

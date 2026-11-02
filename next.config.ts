@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
 
   // API rewrite: browser calls same-origin /api/v1, proxied to backend
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:4000';
+    const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:4010';
     return [
       {
         source: '/api/v1/:path*',

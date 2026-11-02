@@ -46,6 +46,20 @@ export function formatMoney(
   return `${prefix}${withSpaces}${suffix}`;
 }
 
+export function formatMillimes(
+  millimes: number,
+  options?: {
+    showSign?: boolean;
+    decimals?: number;
+    suffix?: string;
+  }
+): string {
+  if (isNaN(millimes) || !isFinite(millimes)) {
+    return `0${options?.suffix ?? ' TND'}`;
+  }
+  return formatMoney(millimes / 1000, options);
+}
+
 /**
  * Formats percentages like "42.3%" or "+42.3%"
  */

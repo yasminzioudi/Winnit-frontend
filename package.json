@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test 'lib/finance/*.test.ts'",
-    "api:types": "openapi-typescript http://127.0.0.1:4000/api/docs-json -o lib/api/schema.d.ts"
+    "api:types": "openapi-typescript http://127.0.0.1:4010/api/docs-json -o lib/api/schema.d.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.0",
