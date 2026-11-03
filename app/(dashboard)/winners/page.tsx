@@ -1,3 +1,5 @@
+'use client';
+
 import { Suspense, useState } from 'react';
 import { ProfitOSSubNav } from '@/components/profit-os/SubNav';
 import { useQuery } from '@tanstack/react-query';
