@@ -33,17 +33,17 @@ cd winnit-frontend && npm run build && npm start
 
 **IMPORTANT** : Les totaux changent selon l'inclusion du 3 novembre :
 
-- `to=2026-11-03` (exclut le 3 nov) :
-  - Commandes totales : **264**
-  - Livrées : **209**
-  - CA Brut : **35 856 TND** (35 856 000 millimes)
-  - Contribution Nette : **11 785 TND**
+- `to=2026-11-03` (exclut le 3 nov) - `curl -s -H "x-workspace-id: ws_maison_ambre" "http://localhost:4000/api/v1/analytics/summary?from=2026-08-05&to=2026-11-03"`:
+  - Commandes totales : **588**
+  - CA Brut : **77 805 TND** (77 805 000 millimes)
+  - Contribution Nette : **24 484,9 TND**
+  - Taux refus : **23.5%**
 
-- `to=2026-11-03T23:59:59.999Z` (inclut le 3 nov) :
-  - Commandes totales : **276**
-  - Livrées : **219**
-  - CA Brut : **37 677 TND**
-  - Contribution Nette : **12 912 TND**
+- `to=2026-11-03T23:59:59.999Z` (inclut le 3 nov) - `curl -s -H "x-workspace-id: ws_maison_ambre" "http://localhost:4000/api/v1/analytics/summary?from=2026-08-05&to=2026-11-03T23:59:59.999Z"`:
+  - Commandes totales : **600**
+  - CA Brut : **79 626 TND** (79 626 000 millimes)
+  - Contribution Nette : **25 611,9 TND**
+  - Taux refus : **23.1%**
 
 **Tests avec inclusion du 3 nov** :
 
@@ -53,23 +53,29 @@ cd winnit-frontend && npm run build && npm start
 
 ### KPIs Header (90d, inclut 3 nov)
 
-- [ ] **CA Brut** : 37 677 TND
-- [ ] **Commandes Totales** : 276
-- [ ] **Taux Livraison** : ~79,3% (219/276)
-- [ ] **Contribution Nette** : 12 912 TND
-- [ ] **Marge Nette** : ~34,3%
+`curl -s -H "x-workspace-id: ws_maison_ambre" "http://localhost:4000/api/v1/analytics/summary?from=2026-08-05&to=2026-11-03T23:59:59.999Z"`:
+
+- [ ] **CA Brut** : 79 626 TND
+- [ ] **Commandes Totales** : 600
+- [ ] **Taux Livraison** : ~77% 
+- [ ] **Contribution Nette** : 25 611,9 TND
+- [ ] **Marge Nette** : ~32%
 
 ### Waterfall 6 étapes
 
-- [ ] Étape 1 : Revenu Brut = **37 677 TND**
+`curl -s -H "x-workspace-id: ws_maison_ambre" "http://localhost:4000/api/v1/analytics/summary?from=2026-08-05&to=2026-11-03T23:59:59.999Z"`:
+
+- [ ] Étape 1 : Revenu Brut = **79 626 TND**
 - [ ] Étape 2 : - COGS Produits
 - [ ] Étape 3 : - Livraisons
 - [ ] Étape 4 : - Publicité Payée
 - [ ] Étape 5 : - Pénalité Refus COD
-- [ ] Étape 6 : = Contribution Nette = **12 912 TND**
+- [ ] Étape 6 : = Contribution Nette = **25 611,9 TND**
 - [ ] Chaque étape affiche montant + barre colorée proportionnelle
 
 ### Onglet COD (inclut 3 nov)
+
+`curl -s -H "x-workspace-id: ws_maison_ambre" "http://localhost:4000/api/v1/analytics/cod?from=2026-08-05&to=2026-11-03T23:59:59.999Z"`:
 
 - [ ] **Encaissements Attendus** : 79 552 TND
 - [ ] **Virements Reçus** : 49 295 TND
@@ -103,9 +109,11 @@ cd winnit-frontend && npm run build && npm start
 
 ### Podium Top 3 (inclut 3 nov)
 
-- [ ] **#1** : Sahara Gold Cuff Bracelet (score **94**, label "Winner")
-- [ ] **#2** : Aura d'Ambre Extrait 50ml (score **90**, label "Winner")
-- [ ] **#3** : Jasmine Night Candle Collection (score **86**, label "Winner")
+`curl -s -H "x-workspace-id: ws_maison_ambre" "http://localhost:4000/api/v1/analytics/winners?from=2026-08-05&to=2026-11-03T23:59:59.999Z"`:
+
+- [ ] **#1** : Sahara Gold Cuff Bracelet (score **92**, label "Winner")
+- [ ] **#2** : Aura d'Ambre Duo Bundle (score **89**, label "Winner")
+- [ ] **#3** : Aura d'Ambre Extrait 50ml (score **87**, label "Winner")
 - [ ] Chaque carte affiche : nom, score, icône trophée, breakdown 4 composantes
 
 ### Breakdown (anneau scores)
@@ -191,16 +199,15 @@ Couleurs statut :
 
 ### Vérification Résumé PDF (inclut 3 nov)
 
-Ouvrir le PDF téléchargé :
+Ouvrir le PDF téléchargé (données depuis `curl ?from=2026-08-05&to=2026-11-03T23:59:59.999Z`) :
 - [ ] Titre "Rapport WINNIT OS"
 - [ ] Période affichée : dates from/to
 - [ ] Section "KPIs Clés" :
-  - Commandes Totales : **276**
-  - Livrées : **219**
-  - Panier Moyen : **~137 TND**
+  - Commandes Totales : **600**
+  - Panier Moyen : **~133 TND**
 - [ ] Section "Cascade P&L" :
-  - CA Brut : **37 677 TND** (pas 37 677 000 !)
-  - Contribution Nette : **12 912 TND**
+  - CA Brut : **79 626 TND** (pas 79 626 000 !)
+  - Contribution Nette : **25 611,9 TND**
 - [ ] Section "Top 5 Produits" :
   - Sahara Gold Cuff Bracelet en premier
 - [ ] Section "Statut COD" :
@@ -321,18 +328,19 @@ Ouvrir le PDF téléchargé :
 # Mode: Navigation, Device: Desktop
 ```
 
-Scores attendus :
-- [ ] **Performance** : > 90
-- [ ] **Accessibility** : > 95
-- [ ] **Best Practices** : > 95
-- [ ] **SEO** : > 90
+Scores à mesurer (Chrome DevTools > Lighthouse) :
+- [ ] **Performance** : à mesurer
+- [ ] **Accessibility** : à mesurer
+- [ ] **Best Practices** : à mesurer
+- [ ] **SEO** : à mesurer
 - [ ] **PWA** : ✅ Installable
 
 ### Core Web Vitals
 
-- [ ] **LCP** (Largest Contentful Paint) : < 2.5s
-- [ ] **FID** (First Input Delay) : < 100ms
-- [ ] **CLS** (Cumulative Layout Shift) : < 0.1
+À mesurer (Chrome DevTools > Performance) :
+- [ ] **LCP** (Largest Contentful Paint) : à mesurer
+- [ ] **FID** (First Input Delay) : à mesurer
+- [ ] **CLS** (Cumulative Layout Shift) : à mesurer
 
 ---
 
@@ -359,9 +367,9 @@ npm run lint
 
 ```bash
 npm run test
-# Output: ℹ tests 12, ℹ pass 12, ℹ fail 0
+# Output: ℹ tests 24, ℹ pass 24, ℹ fail 0
 ```
-- [ ] 12/12 tests passent
+- [ ] 24/24 tests passent
   - Finance: waterfall, COD, unit economics
   - Reports: CSV, summary rows, millimes conversion
   - API: winners array structure
@@ -372,9 +380,9 @@ npm run test
 ```bash
 cd winnit-backend
 npm test
-# Output: Tests: 6 failed, 204 passed, 210 total
+# Output: Tests: 210 passed, 210 total
 ```
-- [ ] 204/210 tests passent (6 échecs non-bloquants)
+- [ ] 210/210 tests passent
 
 ---
 

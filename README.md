@@ -62,14 +62,14 @@ mongo --version  # >= 7.0
 ```bash
 cd winnit-backend
 npm install
-npm run seed          # Génère 500 commandes réparties sur 90j
+npm run seed          # Génère 600 commandes réparties sur 90j
 npm run build
 npm start             # http://localhost:4000
 ```
 
 **Seed** crée :
 - 12 produits (bijoux Maison Ambre)
-- 500 commandes (statuts : delivered 79%, refused 21%)
+- 600 commandes (statuts : delivered ~77%, refused ~23%)
 - 1 workspace `ws_maison_ambre`
 - Quotas journaliers respectant loi 20 (20% produits = 80% revenu)
 
@@ -109,12 +109,12 @@ NEXT_PUBLIC_WORKSPACE_ID=ws_maison_ambre
 ### Waterfall 6 étapes (millimes → TND)
 
 ```typescript
-Revenu Brut              77 805 000 millimes (77 805 TND)
-- COGS Produits           -6 930 000
-- Livraisons             -23 100 000
-- Publicité Payée         -7 378 000
-- Pénalité Refus COD     -27 484 850
-= Contribution Nette      12 912 150 millimes (12 912,2 TND)
+Revenu Brut              79 626 000 millimes (79 626 TND)
+- COGS Produits          -14 850 000
+- Livraisons             -50 400 000
+- Publicité Payée        -19 764 000
+- Pénalité Refus COD      31 000 100
+= Contribution Nette      25 611 900 millimes (25 611,9 TND)
 ```
 
 **Identité** : `netRealizedContribution = grossRevenue - productCOGS - outboundShipping - paidAdSpend - codRefusalPenalty`
@@ -153,7 +153,7 @@ pendingSettlement = expectedCash - settled
 
 `contracts/finance-golden.json` (77 lignes) contient les attentes de calcul pour :
 - Unit economics (1 commande : COGS, shipping, CPA, contribution)
-- Waterfall agrégé (276 commandes)
+- Waterfall agrégé 600 commandes
 - COD reconciliation
 
 Backend (`src/common/utils/contracts-guard.spec.ts`) et frontend (`lib/finance/contracts-guard.test.ts`) vérifient que leurs calculs respectent ces contrats.
@@ -203,7 +203,7 @@ DYNAMIC_CACHE:  autres                               (network-first, fallback of
 ### Frontend (mesure actuelle : 3 nov 2026)
 
 ```bash
-npm run test          # 12 tests (node:test)
+npm run test          # 24 tests (node:test)
 npm run lint          # 0 erreurs, 22 warnings
 npx tsc --noEmit      # 0 erreurs TypeScript
 ```
@@ -218,7 +218,7 @@ npx tsc --noEmit      # 0 erreurs TypeScript
 ### Backend (mesure actuelle : 3 nov 2026)
 
 ```bash
-npm test              # 204 passed, 6 failed (non-bloquants)
+npm test              # 210 passed
 npm run lint          # 0 erreurs
 ```
 
@@ -228,19 +228,20 @@ npm run lint          # 0 erreurs
 - Indexes: compound indexes MongoDB (perf)
 - Guards: contracts-guard (golden fixture)
 
-**Note** : 6 tests en échec sont des edge cases non prioritaires (scenarios invalides, optimistic locking retry).
-
 ---
 
 ## Limites Connues
 
-1. **Pas d'authentification réelle** : form login factice, pas de JWT/session
+1. **Authentification mock** : `DevTenantGuard` factice, pas de JWT/session
 2. **Workspace hardcodé** : `ws_maison_ambre` en dur dans .env, pas de multi-tenant UI
 3. **Catalog mock** : `MockProductCatalogAdapter` (API produits non implémentée)
 4. **Pagination orders** : fetchAll limite à 10 pages (1000 commandes max)
 5. **PWA iOS** : pas de prompt natif, seulement hint manuel ("Ajouter à l'écran d'accueil")
 6. **Tests E2E** : aucun (seulement unit + integration)
 7. **Insights AI** : Provider vide (`InsightsProvider` retourne texte statique)
+8. **PDF server-side** : génération client (jsPDF), pas de service backend
+9. **Offline mutations** : pas de queue pour sync après reconnexion
+10. **Simulator Web Worker** : calculs dans thread principal, pas de worker
 
 ---
 
@@ -276,9 +277,9 @@ npm run lint          # 0 erreurs
 npm run seed
 # Génère:
 # - 12 produits (SKU: AMB-001 à AMB-012)
-# - 500 commandes sur 90j (loi Pareto 20/80)
+# - 600 commandes sur 90j (loi Pareto 20/80)
 # - Transporteurs: Aramex (50%), Sodetel (30%), TND Express (20%)
-# - Statuts: delivered 79%, refused 21%
+# - Statuts: delivered ~77%, refused ~23%
 ```
 
 ### Endpoints Principaux
