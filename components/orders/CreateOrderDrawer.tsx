@@ -28,7 +28,6 @@ const PRESET_PRODUCTS = [
 
 const orderSchema = z.object({
   productId: z.string().min(1, "Produit requis"),
-  productNameSnapshot: z.string().min(1, "Nom du produit requis"),
   quantity: z.number().int().min(1, "Quantité minimale : 1"),
   unitPriceTnd: z.number().positive("Prix positif requis"),
   unitCogsTnd: z.number().nonnegative("COGS positif requis"),
@@ -61,7 +60,6 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
     resolver: zodResolver(orderSchema),
     defaultValues: {
       productId: PRESET_PRODUCTS[0].id,
-      productNameSnapshot: PRESET_PRODUCTS[0].name,
       quantity: 1,
       unitPriceTnd: PRESET_PRODUCTS[0].priceTnd,
       unitCogsTnd: PRESET_PRODUCTS[0].cogsTnd,
@@ -79,7 +77,6 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
     const selected = PRESET_PRODUCTS.find((p) => p.id === prodId);
     if (selected) {
       setValue("productId", selected.id);
-      setValue("productNameSnapshot", selected.name);
       setValue("unitPriceTnd", selected.priceTnd);
       setValue("unitCogsTnd", selected.cogsTnd);
       setValue("shippingTnd", selected.shippingTnd);
@@ -130,9 +127,9 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
 
   const createMutation = useMutation({
     mutationFn: (values: OrderFormValues) => {
+      const idempotencyKey = `order-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       const payload = {
         productId: values.productId,
-        productNameSnapshot: values.productNameSnapshot,
         quantity: values.quantity,
         unitPriceMillimes: Math.round(values.unitPriceTnd * 1000),
         unitCogsMillimes: Math.round(values.unitCogsTnd * 1000),
@@ -147,7 +144,11 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
           governorate: values.customerGovernorate,
         },
       };
-      return apiPost("/orders", payload);
+      return apiPost("/orders", payload, {
+        headers: {
+          'Idempotency-Key': idempotencyKey,
+        },
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });

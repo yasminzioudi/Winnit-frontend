@@ -24,7 +24,7 @@ function SimulatorContent() {
   // Advanced parameters for optimizer
   const [baseVolume, setBaseVolume] = useState(100);
   const [elasticity, setElasticity] = useState(-1.5);
-  const [refusalSensitivity, setRefusalSensitivity] = useState(0.5);
+  const [refusalSensitivity, setRefusalSensitivity] = useState(0.05);
   const [targetMarginPercent, setTargetMarginPercent] = useState(35);
 
   // Scenario management
@@ -75,11 +75,12 @@ function SimulatorContent() {
         cpaMillimes: adCpa,
         baseVolume,
         elasticity,
-        baseRefusalRate: refusalRate,
+        baseRefusalRate: refusalRate / 100,
         refusalSensitivity,
         targetMarginPercent,
       }),
     staleTime: 30_000,
+    enabled: unitPrice >= 1000 && unitCogs >= 0 && shippingCost >= 0,
   });
 
   // Fetch scenarios
