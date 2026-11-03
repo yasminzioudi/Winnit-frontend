@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { escapeCSVField, rowsToCSV } from './csv.ts';
-import { formatMoney } from '../format/currency.ts';
+import { formatMillimes } from '../format/currency.ts';
 
 test('escapeCSVField - simple field', () => {
   const result = escapeCSVField('hello');
@@ -52,18 +52,18 @@ test('rowsToCSV - data with commas and quotes', () => {
   assert.equal(result, 'Product,Description\n"Item ""A""","Nice, clean product"');
 });
 
-test('formatMoney - millimes to TND', () => {
-  const result = formatMoney(129000);
-  // formatMoney divides by 1000 internally and adds thousands separator
-  assert.equal(result, '129 000 TND');
+test('formatMillimes - millimes to TND', () => {
+  const result = formatMillimes(129000);
+  // formatMillimes divides by 1000 internally and adds thousands separator
+  assert.equal(result, '129 TND');
 });
 
-test('formatMoney - zero', () => {
-  const result = formatMoney(0);
+test('formatMillimes - zero', () => {
+  const result = formatMillimes(0);
   assert.equal(result, '0 TND');
 });
 
-test('formatMoney - negative', () => {
-  const result = formatMoney(-5000);
-  assert.equal(result, '-5 000 TND');
+test('formatMillimes - negative', () => {
+  const result = formatMillimes(-5000);
+  assert.equal(result, '-5 TND');
 });

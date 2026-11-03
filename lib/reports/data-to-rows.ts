@@ -1,5 +1,5 @@
-import { formatMoney } from '@/lib/format/currency';
-import { formatDate } from '@/lib/format/date';
+import { formatMillimes } from '../format/currency.ts';
+import { formatDate } from '../format/date.ts';
 import type {
   OrderResponse,
   ExpenseResponse,
@@ -7,7 +7,7 @@ import type {
   WinnerAnalysis,
   ProfitOSMetrics,
   CODAnalyticsResponse,
-} from '@/lib/api/types';
+} from '../api/types.ts';
 
 export function ordersToRows(orders: OrderResponse[]): string[][] {
   const headers = [
@@ -35,13 +35,13 @@ export function ordersToRows(orders: OrderResponse[]): string[][] {
     order.customer.city,
     order.customer.governorate,
     order.quantity.toString(),
-    formatMoney(order.unitPriceMillimes),
-    formatMoney(order.unitCogsMillimes),
-    formatMoney(order.shippingMillimes),
-    formatMoney(order.adCpaMillimes),
+    formatMillimes(order.unitPriceMillimes),
+    formatMillimes(order.unitCogsMillimes),
+    formatMillimes(order.shippingMillimes),
+    formatMillimes(order.adCpaMillimes),
     order.courier,
     order.status,
-    formatMoney(order.netContributionMillimes),
+    formatMillimes(order.netContributionMillimes),
   ]);
 
   return [headers, ...rows];
@@ -59,7 +59,7 @@ export function expensesToRows(expenses: ExpenseResponse[]): string[][] {
   const rows = expenses.map((expense) => [
     expense.category,
     expense.description,
-    formatMoney(expense.amountMillimes),
+    formatMillimes(expense.amountMillimes),
     expense.periodType,
     formatDate(expense.startDate),
   ]);
@@ -83,7 +83,7 @@ export function adSpendToRows(adSpend: AdSpendResponse[]): string[][] {
     spend.campaignName,
     formatDate(spend.periodStart),
     formatDate(spend.periodEnd),
-    formatMoney(spend.spendMillimes),
+    formatMillimes(spend.spendMillimes),
     spend.productId || '-',
     spend.notes || '-',
   ]);
@@ -115,7 +115,7 @@ export function winnersToRows(winners: WinnerAnalysis[]): string[][] {
     winner.totalOrders.toString(),
     winner.deliveredOrders.toString(),
     winner.refusedOrders.toString(),
-    formatMoney(winner.grossRevenueMillimes),
+    formatMillimes(winner.grossRevenueMillimes),
     winner.breakdown.netMarginScore.toString(),
     winner.breakdown.deliveryRateScore.toString(),
     winner.breakdown.roasScore.toString(),
@@ -133,12 +133,12 @@ export function summaryToRows(
 
   const rows: string[][] = [
     ['=== WATERFALL P&L ===', ''],
-    ['CA Brut', formatMoney(summary.waterfall.grossRevenueMillimes)],
-    ['- COGS Produits', formatMoney(summary.waterfall.productCOGSMillimes)],
-    ['- Livraisons', formatMoney(summary.waterfall.outboundShippingMillimes)],
-    ['- Publicité Payée', formatMoney(summary.waterfall.paidAdSpendMillimes)],
-    ['- Pénalité Refus COD', formatMoney(summary.waterfall.codRefusalPenaltyMillimes)],
-    ['= Contribution Nette', formatMoney(summary.waterfall.netRealizedContributionMillimes)],
+    ['CA Brut', formatMillimes(summary.waterfall.grossRevenueMillimes)],
+    ['- COGS Produits', formatMillimes(summary.waterfall.productCOGSMillimes)],
+    ['- Livraisons', formatMillimes(summary.waterfall.outboundShippingMillimes)],
+    ['- Publicité Payée', formatMillimes(summary.waterfall.paidAdSpendMillimes)],
+    ['- Pénalité Refus COD', formatMillimes(summary.waterfall.codRefusalPenaltyMillimes)],
+    ['= Contribution Nette', formatMillimes(summary.waterfall.netRealizedContributionMillimes)],
     ['Marge Nette (%)', ((summary.waterfall.netRealizedContributionMillimes / summary.waterfall.grossRevenueMillimes) * 100).toFixed(1) + '%'],
     ['', ''],
     ['=== KPIS ===', ''],
@@ -147,17 +147,17 @@ export function summaryToRows(
     ['Refusées', summary.kpis.refusedCount.toString()],
     ['Taux de Livraison', summary.kpis.deliveryRatePercent.toFixed(1) + '%'],
     ['Taux de Refus', summary.kpis.refusalRatePercent.toFixed(1) + '%'],
-    ['Panier Moyen', formatMoney(summary.kpis.averageOrderValueMillimes)],
+    ['Panier Moyen', formatMillimes(summary.kpis.averageOrderValueMillimes)],
     ['', ''],
     ['=== CHARGES FIXES ===', ''],
-    ['Charges Fixes', formatMoney(summary.expenses.fixedExpensesMillimes)],
-    ['Profit Net Après Charges', formatMoney(summary.waterfall.netRealizedContributionMillimes - summary.expenses.fixedExpensesMillimes)],
+    ['Charges Fixes', formatMillimes(summary.expenses.fixedExpensesMillimes)],
+    ['Profit Net Après Charges', formatMillimes(summary.waterfall.netRealizedContributionMillimes - summary.expenses.fixedExpensesMillimes)],
     ['Marge Nette Finale', summary.expenses.netProfitMarginPercent.toFixed(1) + '%'],
     ['', ''],
     ['=== COD & TRÉSORERIE ===', ''],
-    ['Encaissements Attendus', formatMoney(cod.summary.expectedCashCollectionsMillimes)],
-    ['Virements Reçus', formatMoney(cod.summary.bankWireSettledMillimes)],
-    ['En Attente Transporteur', formatMoney(cod.summary.pendingCourierPayoutsMillimes)],
+    ['Encaissements Attendus', formatMillimes(cod.summary.expectedCashCollectionsMillimes)],
+    ['Virements Reçus', formatMillimes(cod.summary.bankWireSettledMillimes)],
+    ['En Attente Transporteur', formatMillimes(cod.summary.pendingCourierPayoutsMillimes)],
   ];
 
   return [headers, ...rows];

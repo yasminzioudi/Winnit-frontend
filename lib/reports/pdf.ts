@@ -1,5 +1,5 @@
-import type { ProfitOSMetrics, CODAnalyticsResponse, WinnerAnalysis } from '@/lib/api/types';
-import { formatMoney } from '@/lib/format/currency';
+import type { ProfitOSMetrics, CODAnalyticsResponse, WinnerAnalysis } from '../api/types.ts';
+import { formatMillimes } from '../format/currency.ts';
 
 export async function downloadPDF(
   filename: string,
@@ -41,7 +41,7 @@ export async function downloadPDF(
     ['Livrées', data.summary.kpis.deliveredCount.toString()],
     ['Refusées', data.summary.kpis.refusedCount.toString()],
     ['Taux de Livraison', data.summary.kpis.deliveryRatePercent.toFixed(1) + '%'],
-    ['Panier Moyen', formatMoney(data.summary.kpis.averageOrderValueMillimes)],
+    ['Panier Moyen', formatMillimes(data.summary.kpis.averageOrderValueMillimes)],
   ];
 
   kpis.forEach(([label, value]) => {
@@ -58,12 +58,12 @@ export async function downloadPDF(
 
   doc.setFontSize(10);
   const waterfall = [
-    ['CA Brut', formatMoney(data.summary.waterfall.grossRevenueMillimes)],
-    ['- COGS Produits', formatMoney(data.summary.waterfall.productCOGSMillimes)],
-    ['- Livraisons', formatMoney(data.summary.waterfall.outboundShippingMillimes)],
-    ['- Publicité', formatMoney(data.summary.waterfall.paidAdSpendMillimes)],
-    ['- Pénalité Refus', formatMoney(data.summary.waterfall.codRefusalPenaltyMillimes)],
-    ['= Contribution Nette', formatMoney(data.summary.waterfall.netRealizedContributionMillimes)],
+    ['CA Brut', formatMillimes(data.summary.waterfall.grossRevenueMillimes)],
+    ['- COGS Produits', formatMillimes(data.summary.waterfall.productCOGSMillimes)],
+    ['- Livraisons', formatMillimes(data.summary.waterfall.outboundShippingMillimes)],
+    ['- Publicité', formatMillimes(data.summary.waterfall.paidAdSpendMillimes)],
+    ['- Pénalité Refus', formatMillimes(data.summary.waterfall.codRefusalPenaltyMillimes)],
+    ['= Contribution Nette', formatMillimes(data.summary.waterfall.netRealizedContributionMillimes)],
   ];
 
   waterfall.forEach(([label, value]) => {
@@ -93,7 +93,7 @@ export async function downloadPDF(
     }
     doc.text(`${index + 1}. ${winner.productName} - Score: ${winner.score}`, 20, yPos);
     yPos += 5;
-    doc.text(`   Livraison: ${winner.deliveredOrders}/${winner.totalOrders} - CA: ${formatMoney(winner.grossRevenueMillimes)}`, 20, yPos);
+    doc.text(`   Livraison: ${winner.deliveredOrders}/${winner.totalOrders} - CA: ${formatMillimes(winner.grossRevenueMillimes)}`, 20, yPos);
     yPos += 7;
   });
 
@@ -110,11 +110,11 @@ export async function downloadPDF(
   yPos += 8;
 
   doc.setFontSize(10);
-  doc.text(`Encaissements Attendus: ${formatMoney(data.cod.summary.expectedCashCollectionsMillimes)}`, 20, yPos);
+  doc.text(`Encaissements Attendus: ${formatMillimes(data.cod.summary.expectedCashCollectionsMillimes)}`, 20, yPos);
   yPos += 6;
-  doc.text(`Virements Reçus: ${formatMoney(data.cod.summary.bankWireSettledMillimes)}`, 20, yPos);
+  doc.text(`Virements Reçus: ${formatMillimes(data.cod.summary.bankWireSettledMillimes)}`, 20, yPos);
   yPos += 6;
-  doc.text(`En Attente: ${formatMoney(data.cod.summary.pendingCourierPayoutsMillimes)}`, 20, yPos);
+  doc.text(`En Attente: ${formatMillimes(data.cod.summary.pendingCourierPayoutsMillimes)}`, 20, yPos);
 
   // Page numbers
   const pageCount = doc.getNumberOfPages();
