@@ -279,6 +279,7 @@ function SimulatorContent() {
                 curve={curveData.curve}
                 currentPrice={unitPrice}
                 breakEvenPrice={curveData.breakEvenPriceMillimes}
+                optimumPrice={curveData.elasticOptimumMillimes}
                 recommendedBand={curveData.recommendedBand}
               />
             ) : (
@@ -561,11 +562,13 @@ function ProfitCurve({
   curve,
   currentPrice,
   breakEvenPrice,
+  optimumPrice,
   recommendedBand,
 }: {
   curve: PricingCurvePoint[];
   currentPrice: number;
   breakEvenPrice: number;
+  optimumPrice: number;
   recommendedBand: { minMillimes: number; maxMillimes: number };
 }) {
   if (curve.length === 0) {
@@ -574,8 +577,8 @@ function ProfitCurve({
     );
   }
 
-  const maxProfit = Math.max(...curve.map((p) => p.netProfitMillimes));
-  const minProfit = Math.min(...curve.map((p) => p.netProfitMillimes));
+  const maxProfit = Math.max(...curve.map((p) => p.profitMillimes));
+  const minProfit = Math.min(...curve.map((p) => p.profitMillimes));
   const priceRange = curve[curve.length - 1].priceMillimes - curve[0].priceMillimes;
 
   return (
@@ -637,6 +640,45 @@ function ProfitCurve({
           className="text-[var(--negative-red)]"
         />
 
+        {/* Optimum marker */}
+        {optimumPrice && (
+          <>
+            <line
+              x1={
+                40 +
+                ((optimumPrice - curve[0].priceMillimes) / priceRange) * 740
+              }
+              y1="20"
+              x2={
+                40 +
+                ((optimumPrice - curve[0].priceMillimes) / priceRange) * 740
+              }
+              y2="280"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeDasharray="6 3"
+              className="text-[var(--positive-emerald)]"
+            />
+            <circle
+              cx={
+                40 +
+                ((optimumPrice - curve[0].priceMillimes) / priceRange) * 740
+              }
+              cy={
+                280 -
+                ((curve.find((p) => p.priceMillimes === optimumPrice)
+                  ?.profitMillimes || maxProfit) -
+                  minProfit) /
+                  (maxProfit - minProfit) *
+                  260
+              }
+              r="5"
+              fill="currentColor"
+              className="text-[var(--positive-emerald)]"
+            />
+          </>
+        )}
+
         {/* Profit curve */}
         <polyline
           points={curve
@@ -647,7 +689,7 @@ function ProfitCurve({
                   740;
               const y =
                 280 -
-                ((point.netProfitMillimes - minProfit) /
+                ((point.profitMillimes - minProfit) /
                   (maxProfit - minProfit)) *
                   260;
               return `${x},${y}`;
@@ -667,7 +709,7 @@ function ProfitCurve({
           cy={
             280 -
             ((curve.find((p) => p.priceMillimes === currentPrice)
-              ?.netProfitMillimes || 0) -
+              ?.profitMillimes || 0) -
               minProfit) /
               (maxProfit - minProfit) *
               260

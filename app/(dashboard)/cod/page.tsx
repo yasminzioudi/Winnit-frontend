@@ -44,7 +44,20 @@ function CODPageContent() {
   });
 
   const reconcileMutation = useMutation({
-    mutationFn: () => apiPost("/settlements/reconcile", {}),
+    mutationFn: async () => {
+      const pendingSettlements = settlements.filter(s => s.status === 'pending');
+      if (pendingSettlements.length === 0) {
+        throw new Error('Aucun règlement en attente à réconcilier');
+      }
+      
+      // Reconcile each pending settlement
+      const results = await Promise.all(
+        pendingSettlements.map(settlement =>
+          apiPost(`/settlements/${settlement._id}/reconcile`, {})
+        )
+      );
+      return results;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.settlements.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });

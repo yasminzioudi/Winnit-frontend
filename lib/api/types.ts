@@ -287,9 +287,8 @@ export interface OptimizePriceDto {
 
 export interface PricingCurvePoint {
   priceMillimes: number;
-  volumeUnits: number;
-  refusalRatePercent: number;
-  netProfitMillimes: number;
+  profitMillimes: number;
+  refusalRate: number;
 }
 
 export interface OptimizePriceResponse {

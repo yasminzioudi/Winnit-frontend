@@ -48,6 +48,7 @@ interface CreateOrderDrawerProps {
 export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
+  const [idempotencyKey] = useState(() => `order-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
 
   const {
     register,
@@ -127,7 +128,6 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
 
   const createMutation = useMutation({
     mutationFn: (values: OrderFormValues) => {
-      const idempotencyKey = `order-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       const payload = {
         productId: values.productId,
         quantity: values.quantity,
@@ -157,8 +157,22 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
       reset();
       onClose();
     },
-    onError: (err: Error) => {
-      toastError(err.message || "Erreur lors de la création de la commande");
+    onError: (err: Error & { errors?: { validation?: string[] } }) => {
+      // Parse problem+json validation errors
+      if (err?.errors?.validation && Array.isArray(err.errors.validation)) {
+        const validationErrors = err.errors.validation as string[];
+        const frenchErrors = validationErrors.map(msg => {
+          if (msg.includes('unitPriceMillimes must not be less than')) return 'Prix unitaire trop faible';
+          if (msg.includes('unitCogsMillimes must not be less than')) return 'COGS ne peut pas être négatif';
+          if (msg.includes('shippingMillimes must not be less than')) return 'Frais de port invalides';
+          if (msg.includes('quantity must not be less than')) return 'Quantité minimale : 1';
+          if (msg.includes('Product') && msg.includes('not found')) return 'Produit introuvable dans le catalogue';
+          return msg;
+        });
+        toastError(frenchErrors.join(' • '));
+      } else {
+        toastError(err.message || "Erreur lors de la création de la commande");
+      }
     },
   });
 
@@ -346,6 +360,7 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
             type="submit"
             variant="primary"
             isLoading={createMutation.isPending}
+            disabled={createMutation.isPending}
           >
             Créer la commande
           </Button>
