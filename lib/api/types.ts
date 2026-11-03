@@ -66,15 +66,12 @@ export interface ExpenseResponse {
   _id: string;
   workspaceId: string;
   category: string;
-  label: string;
+  description: string;
   amountMillimes: number;
-  periodType: 'one-time' | 'monthly';
-  periodStart: string;
-  periodEnd?: string;
-  notes?: string;
+  periodType: string;
+  startDate: string;
+  endDate?: string;
   version: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface ExpensesListResponse {

@@ -165,13 +165,13 @@ export function ExpensesTab() {
             {expenses.map((exp) => (
               <tr key={exp._id} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40">
                 <td className="p-3.5">{getCategoryBadge(exp.category)}</td>
-                <td className="p-3.5 font-medium text-foreground">{exp.label}</td>
+                <td className="p-3.5 font-medium text-foreground">{exp.description}</td>
                 <td className="p-3.5">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
                     {exp.periodType === "monthly" ? "Mensuel" : "Ponctuel"}
                   </span>
                 </td>
-                <td className="p-3.5 text-neutral-400">{formatDate(exp.periodStart)}</td>
+                <td className="p-3.5 text-neutral-400">{formatDate(exp.startDate)}</td>
                 <td className="p-3.5 text-right font-bold tabular-nums text-foreground">
                   {formatMoney(exp.amountMillimes / 1000)}
                 </td>
