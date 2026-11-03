@@ -183,3 +183,115 @@ export function apiDelete<T>(
 ): Promise<T> {
   return apiFetch<T>(endpoint, { ...options, method: 'DELETE' });
 }
+
+// Re-export types needed by client consumers
+export type {
+  ProfitOSMetrics,
+  AdSpendResponse,
+  AdSpendListResponse,
+  ExpenseResponse,
+  ExpenseListResponse,
+  CODAnalytics,
+  SettlementResponse,
+  SettlementsListResponse,
+  WinnerAnalysis,
+  WinnersListResponse,
+  Scenario,
+  ScenarioListResponse,
+  OptimizePriceDto,
+  OptimizePriceResponse,
+  PricingCurvePoint,
+  Product,
+  ProductListResponse,
+} from './types';
+
+import type {
+  ProfitOSMetrics,
+  AdSpendResponse,
+  AdSpendListResponse,
+  ExpenseResponse,
+  ExpenseListResponse,
+  CODAnalytics,
+  SettlementResponse,
+  SettlementsListResponse,
+  WinnerAnalysis,
+  WinnersListResponse,
+  Scenario,
+  ScenarioListResponse,
+  OptimizePriceDto,
+  OptimizePriceResponse,
+  Product,
+  ProductListResponse,
+} from './types';
+
+/**
+ * API client with typed methods
+ */
+export const apiClient = {
+  // Profit OS
+  getProfitOSMetrics: (from: string, to: string) =>
+    apiGet<ProfitOSMetrics>(`/analytics/profit-os?from=${from}&to=${to}`),
+
+  // Ad Spend
+  getAdSpends: (from: string, to: string) =>
+    apiGet<AdSpendListResponse>(`/marketing/ad-spend?from=${from}&to=${to}`),
+
+  createAdSpend: (data: Omit<AdSpendResponse, '_id' | 'version'>) =>
+    apiPost<AdSpendResponse>('/marketing/ad-spend', data),
+
+  updateAdSpend: (id: string, data: Partial<AdSpendResponse>) =>
+    apiPatch<AdSpendResponse>(`/marketing/ad-spend/${id}`, data),
+
+  deleteAdSpend: (id: string) =>
+    apiDelete<void>(`/marketing/ad-spend/${id}`),
+
+  // Expenses
+  getExpenses: (from: string, to: string) =>
+    apiGet<ExpenseListResponse>(`/expenses?from=${from}&to=${to}`),
+
+  createExpense: (data: Omit<ExpenseResponse, '_id' | 'version'>) =>
+    apiPost<ExpenseResponse>('/expenses', data),
+
+  updateExpense: (id: string, data: Partial<ExpenseResponse>) =>
+    apiPatch<ExpenseResponse>(`/expenses/${id}`, data),
+
+  deleteExpense: (id: string) =>
+    apiDelete<void>(`/expenses/${id}`),
+
+  // COD
+  getCODAnalytics: (from: string, to: string) =>
+    apiGet<CODAnalytics>(`/analytics/cod?from=${from}&to=${to}`),
+
+  getSettlements: (from: string, to: string) =>
+    apiGet<SettlementsListResponse>(`/settlements?from=${from}&to=${to}`),
+
+  reconcileSettlements: (settlementIds: string[]) =>
+    apiPost<void>('/settlements/reconcile', { settlementIds }),
+
+  // Winners
+  getWinners: (from: string, to: string) =>
+    apiGet<WinnersListResponse>(`/analytics/winners?from=${from}&to=${to}`).then(
+      (res) => res.data
+    ),
+
+  // Scenarios
+  getScenarios: () =>
+    apiGet<ScenarioListResponse>('/scenarios').then((res) => res.data),
+
+  createScenario: (data: Omit<Scenario, '_id' | 'version'>) =>
+    apiPost<Scenario>('/scenarios', data),
+
+  updateScenario: (id: string, data: Partial<Scenario>) =>
+    apiPatch<Scenario>(`/scenarios/${id}`, data),
+
+  deleteScenario: (id: string) =>
+    apiDelete<void>(`/scenarios/${id}`),
+
+  // Pricing optimizer
+  optimizePrice: (data: OptimizePriceDto) =>
+    apiPost<OptimizePriceResponse>('/pricing/optimize', data),
+
+  // Products
+  getProducts: () =>
+    apiGet<ProductListResponse>('/products').then((res) => res.data),
+};

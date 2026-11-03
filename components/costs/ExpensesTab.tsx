@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiGet, apiPost, apiDelete } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { ExpensesListResponse } from "@/lib/api/types";
+import type { ExpenseListResponse } from "@/lib/api/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -41,7 +41,7 @@ export function ExpensesTab() {
 
   const expensesQuery = useQuery({
     queryKey: queryKeys.expenses.list(),
-    queryFn: () => apiGet<ExpensesListResponse>("/expenses?limit=50"),
+    queryFn: () => apiGet<ExpenseListResponse>("/expenses?limit=50"),
   });
 
   const expenses = expensesQuery.data?.data || [];

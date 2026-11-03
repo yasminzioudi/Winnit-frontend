@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calculator, ShoppingBag, Receipt, Truck } from "lucide-react";
+import { Calculator, ShoppingBag, Receipt, Truck, Trophy, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SubNavProps {
@@ -30,6 +30,16 @@ const NAV_TABS = [
     href: "/cod",
     label: "COD & Transporteurs",
     icon: Truck,
+  },
+  {
+    href: "/winners",
+    label: "Podium",
+    icon: Trophy,
+  },
+  {
+    href: "/simulator",
+    label: "Simulateur",
+    icon: FlaskConical,
   },
 ];
 

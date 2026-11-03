@@ -14,7 +14,6 @@ export type CreateExpenseDto = Schema<'CreateExpenseDto'>;
 export type UpdateExpenseDto = Schema<'UpdateExpenseDto'>;
 export type CreateScenarioDto = Schema<'CreateScenarioDto'>;
 export type CreateSettlementDto = Schema<'CreateSettlementDto'>;
-export type OptimizePriceDto = Schema<'OptimizePriceDto'>;
 
 // Response types - defined manually since backend Swagger doesn't export them
 
@@ -74,7 +73,7 @@ export interface ExpenseResponse {
   version: number;
 }
 
-export interface ExpensesListResponse {
+export interface ExpenseListResponse {
   data: ExpenseResponse[];
 }
 
@@ -122,12 +121,15 @@ export interface ExpenseSummaryDto {
   netProfitMarginPercent: number;
 }
 
-export interface AnalyticsSummaryResponse {
+// Analytics Summary (Profit OS)
+export interface ProfitOSMetrics {
   waterfall: WaterfallDto;
   kpis: KPIsDto;
   expenses: ExpenseSummaryDto;
   adSpendDeltaMillimes: number;
 }
+
+export type AnalyticsSummaryResponse = ProfitOSMetrics;
 
 export interface TimeseriesBucketDto {
   period: string;
@@ -192,12 +194,14 @@ export type GovernorateAnalyticsItem = GovernorateAnalyticsItemDto;
 
 export interface CODAnalyticsResponse {
   summary: {
+    totalOrdersCount: number;
+    deliveredOrdersCount: number;
+    totalRevenueMillimes: number;
+    settledRevenueMillimes: number;
+    pendingSettlementMillimes: number;
     pendingCourierPayoutsMillimes: number;
     bankWireSettledMillimes: number;
     expectedCashCollectionsMillimes: number;
-    oldestPendingPayoutAgeDays: number;
-    settledNetMillimes: number;
-    totalExpectedMillimes: number;
   };
   aging: {
     days0to7Count: number;
@@ -206,6 +210,8 @@ export interface CODAnalyticsResponse {
     daysOver30Count: number;
   };
 }
+
+export type CODAnalytics = CODAnalyticsResponse;
 
 // Settlements
 export interface SettlementResponse {
@@ -223,21 +229,98 @@ export interface SettlementsListResponse {
   data: SettlementResponse[];
 }
 
-export interface WinnerRankingItemDto {
+// Winners
+export interface WinnerAnalysis {
   productId: string;
   productName: string;
   score: number;
-  label: string;
+  label: 'Winner' | 'À surveiller' | 'À couper' | 'Données insuffisantes';
+  breakdown: {
+    netMarginScore: number;
+    deliveryRateScore: number;
+    roasScore: number;
+    volumeTrendScore: number;
+  };
   totalOrders: number;
   deliveredOrders: number;
+  refusedOrders: number;
   grossRevenueMillimes: number;
 }
 
-export interface WinnersResponse {
-  products: WinnerRankingItemDto[];
+export interface WinnersListResponse {
+  data: WinnerAnalysis[];
 }
 
-export type WinnerRankingItem = WinnerRankingItemDto;
+export type WinnerRankingItem = WinnerAnalysis;
+
+// Scenarios
+export interface Scenario {
+  _id: string;
+  workspaceId?: string;
+  name: string;
+  productId: string;
+  unitPriceMillimes: number;
+  unitCogsMillimes: number;
+  shippingMillimes: number;
+  adCpaMillimes: number;
+  targetMarginPercent: number;
+  notes?: string;
+  version: number;
+}
+
+export interface ScenarioListResponse {
+  data: Scenario[];
+}
+
+// Pricing optimizer
+export interface OptimizePriceDto {
+  basePriceMillimes: number;
+  cogsMillimes: number;
+  logisticsMillimes: number;
+  cpaMillimes: number;
+  baseVolume: number;
+  elasticity: number;
+  baseRefusalRate: number;
+  refusalSensitivity: number;
+  targetMarginPercent: number;
+}
+
+export interface PricingCurvePoint {
+  priceMillimes: number;
+  volumeUnits: number;
+  refusalRatePercent: number;
+  netProfitMillimes: number;
+}
+
+export interface OptimizePriceResponse {
+  curve: PricingCurvePoint[];
+  recommendedBand: {
+    minMillimes: number;
+    maxMillimes: number;
+  };
+  elasticOptimumMillimes: number;
+  breakEvenPriceMillimes: number;
+}
+
+// Products (catalog)
+export interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  imageUrl?: string;
+  sellingPriceMillimes: number;
+  cogsMillimes: number;
+  logisticsCostPerOrderMillimes: number;
+  targetCpaMillimes: number;
+  expectedRefusalRate: number;
+  courier: 'yalidine' | 'aramex';
+  status: 'active' | 'inactive';
+}
+
+export interface ProductListResponse {
+  data: Product[];
+}
 
 export interface InsightDto {
   id: string;

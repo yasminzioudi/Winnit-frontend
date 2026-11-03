@@ -154,3 +154,49 @@ export function calculateCourierReconciliation(
     pendingCourierPayouts,
   };
 }
+
+/**
+ * Calculate max tolerable CPA in millimes.
+ * Formula: price - COGS - logistics
+ * Calibration: 129000 - 28000 - 14000 = 87000 millimes (87.0 TND)
+ */
+export function calculateMaxTolerableCPA(
+  priceMillimes: number,
+  cogsMillimes: number,
+  logisticsMillimes: number,
+  refusalRate: number
+): number {
+  return Math.max(0, priceMillimes - cogsMillimes - logisticsMillimes);
+}
+
+/**
+ * Calculate break-even ROAS.
+ * Formula: price / maxTolerableCPA
+ * Calibration: 129000 / 87000 = 1.48
+ */
+export function calculateBreakEvenROAS(
+  priceMillimes: number,
+  cogsMillimes: number,
+  logisticsMillimes: number,
+  refusalRate: number
+): number {
+  const maxCpa = calculateMaxTolerableCPA(priceMillimes, cogsMillimes, logisticsMillimes, refusalRate);
+  if (maxCpa === 0) return 0;
+  return Math.round((priceMillimes / maxCpa) * 100) / 100;
+}
+
+/**
+ * Calculate net profit per unit in millimes.
+ * Formula: price - COGS - logistics - CPA - (refusalRate/100 * CPA)
+ * Calibration: 129000 - 28000 - 14000 - 22000 - (0.21 * 22000) = 60380 millimes (60.4 TND)
+ */
+export function calculateNetProfitPerUnit(
+  priceMillimes: number,
+  cogsMillimes: number,
+  logisticsMillimes: number,
+  cpaMillimes: number,
+  refusalRate: number
+): number {
+  const wastedCPA = Math.round((refusalRate / 100) * cpaMillimes);
+  return priceMillimes - cogsMillimes - logisticsMillimes - cpaMillimes - wastedCPA;
+}
