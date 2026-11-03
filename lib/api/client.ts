@@ -1,7 +1,7 @@
 import { ProblemDetail } from './problem';
 
 const API_BASE_URL = '/api/v1';
-const DEFAULT_WORKSPACE_ID = 'ws_maison_ambre';
+const DEFAULT_WORKSPACE_ID = process.env.NEXT_PUBLIC_WORKSPACE_ID || 'ws_maison_ambre';
 
 export interface FetchOptions extends RequestInit {
   workspaceId?: string;

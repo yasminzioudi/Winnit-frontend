@@ -207,6 +207,22 @@ export interface CODAnalyticsResponse {
   };
 }
 
+// Settlements
+export interface SettlementResponse {
+  _id: string;
+  workspaceId: string;
+  courier: string;
+  settlementDate: string;
+  totalAmountMillimes: number;
+  orderIds: string[];
+  status: string;
+  version: number;
+}
+
+export interface SettlementsListResponse {
+  data: SettlementResponse[];
+}
+
 export interface WinnerRankingItemDto {
   productId: string;
   productName: string;
