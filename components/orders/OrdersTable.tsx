@@ -154,7 +154,7 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
             <span className="text-xs text-neutral-500 hidden sm:inline">Changer en:</span>
             <Button
               size="sm"
-              variant="secondary"
+              variant="subtle"
               className="text-xs h-7"
               onClick={() => bulkStatusMutation.mutate({ status: "confirmed" })}
               disabled={bulkStatusMutation.isPending}
@@ -163,7 +163,7 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
             </Button>
             <Button
               size="sm"
-              variant="secondary"
+              variant="subtle"
               className="text-xs h-7"
               onClick={() => bulkStatusMutation.mutate({ status: "shipped" })}
               disabled={bulkStatusMutation.isPending}
@@ -172,7 +172,7 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
             </Button>
             <Button
               size="sm"
-              variant="secondary"
+              variant="subtle"
               className="text-xs h-7"
               onClick={() => bulkStatusMutation.mutate({ status: "delivered" })}
               disabled={bulkStatusMutation.isPending}

@@ -61,7 +61,7 @@ export function AdSpendTab() {
       setIsDrawerOpen(false);
       setCampaignName("");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toastError(err.message || "Erreur lors de la création");
     },
   });
@@ -73,7 +73,7 @@ export function AdSpendTab() {
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
       success("Dépense supprimée");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toastError(err.message || "Erreur lors de la suppression");
     },
   });

@@ -83,12 +83,12 @@ export function OrderFilters({ className = "" }: { className?: string }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
         {/* Search Input */}
         <div className="lg:col-span-2 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none z-10" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Rechercher par n°, client, ville..."
-            icon={Search}
-            className="w-full"
+            className="w-full pl-10"
           />
         </div>
 

@@ -41,11 +41,11 @@ const orderSchema = z.object({
 type OrderFormValues = z.infer<typeof orderSchema>;
 
 interface CreateOrderDrawerProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
-export function CreateOrderDrawer({ isOpen, onClose }: CreateOrderDrawerProps) {
+export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
 

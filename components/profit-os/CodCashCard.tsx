@@ -25,8 +25,8 @@ export function CodCashCard({ data, isLoading }: CodCashCardProps) {
 
   const { summary, aging } = data;
   const pendingTnd = summary.pendingCourierPayoutsMillimes / 1000;
-  const settledTnd = summary.settledNetMillimes / 1000;
-  const expectedTnd = summary.totalExpectedMillimes / 1000;
+  const settledTnd = summary.bankWireSettledMillimes / 1000;
+  const expectedTnd = summary.expectedCashCollectionsMillimes / 1000;
 
   const totalAgingCount =
     aging.days0to7Count +

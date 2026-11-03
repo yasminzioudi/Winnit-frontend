@@ -35,7 +35,7 @@ export function ExpensesTab() {
   const [description, setDescription] = useState("");
   const [amountTnd, setAmountTnd] = useState("500");
   const [periodType, setPeriodType] = useState<"monthly" | "one-time">("monthly");
-  const [startDate, setStartDate] = useState(
+  const [startDate, setStartDate] = useState(() =>
     new Date(Date.now() - 30 * 86400000).toISOString().substring(0, 10)
   );
 
@@ -64,7 +64,7 @@ export function ExpensesTab() {
       setIsDrawerOpen(false);
       setDescription("");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toastError(err.message || "Erreur lors de la création");
     },
   });
@@ -76,7 +76,7 @@ export function ExpensesTab() {
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
       success("Charge supprimée");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toastError(err.message || "Erreur lors de la suppression");
     },
   });
@@ -196,7 +196,11 @@ export function ExpensesTab() {
       </div>
 
       {/* Drawer */}
-      <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} title="Ajouter une charge fixe">
+      <Drawer
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        title="Ajouter une charge fixe"
+      >
         <div className="space-y-4 p-4 sm:p-6 pb-20">
           <div>
             <label className="text-xs font-medium text-foreground block mb-1">Catégorie</label>

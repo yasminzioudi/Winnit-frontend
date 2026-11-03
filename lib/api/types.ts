@@ -56,8 +56,7 @@ export interface OrderResponse {
 
 export interface OrdersListResponse {
   data: OrderResponse[];
-  pagination: {
-    limit: number;
+  meta: {
     nextCursor?: string;
   };
 }

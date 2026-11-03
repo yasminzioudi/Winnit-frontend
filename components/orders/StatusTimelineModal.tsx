@@ -9,13 +9,13 @@ import { Clock, User } from "lucide-react";
 
 interface StatusTimelineModalProps {
   order: OrderResponse | null;
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
 export function StatusTimelineModal({
   order,
-  isOpen,
+  open,
   onClose,
 }: StatusTimelineModalProps) {
   if (!order) return null;
@@ -30,10 +30,10 @@ export function StatusTimelineModal({
 
   return (
     <Dialog
-      isOpen={isOpen}
+      open={open}
       onClose={onClose}
       title={`Historique de la commande ${order.orderNumber}`}
-      description={`Détail des transitions d'état pour ${order.productNameSnapshot}`}
+      description={`Détail des transitions d&apos;état pour ${order.productNameSnapshot}`}
     >
       <div className="py-2 space-y-4">
         <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-neutral-200 dark:before:bg-neutral-800">
@@ -44,12 +44,12 @@ export function StatusTimelineModal({
 
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <StatusPill status={step.status} />
+                  <StatusPill status={step.status as OrderResponse['status']} />
                 </div>
                 <div className="flex items-center gap-3 text-xs text-neutral-400">
                   <span className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {formatDate(step.changedAt, { includeTime: true })}
+                    {formatDate(step.changedAt)}
                   </span>
                   <span className="flex items-center gap-1">
                     <User className="h-3 w-3" />
