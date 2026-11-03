@@ -91,7 +91,7 @@ function OrdersPageContent() {
 
       {/* Create Order Drawer */}
       <CreateOrderDrawer
-        isOpen={isDrawerOpen}
+        open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
       />
     </div>

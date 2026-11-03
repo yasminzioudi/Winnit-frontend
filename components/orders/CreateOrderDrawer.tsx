@@ -14,6 +14,7 @@ import { Select } from "@/components/ui/Select";
 import { useToast } from "@/hooks/useToast";
 import { formatMoney } from "@/lib/format/currency";
 import { calculateOrderNetContribution } from "@/lib/finance/profit";
+import type { OrderItem } from "@/lib/finance/types";
 import { DollarSign, CheckCircle2, AlertCircle } from "lucide-react";
 
 const PRESET_PRODUCTS = [
@@ -96,26 +97,36 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
   const adCpaMillimes = Math.round((selectedProd?.cpaTnd || 22) * 1000);
 
   const deliveredNetMillimes = calculateOrderNetContribution({
-    unitPriceMillimes: priceMillimes,
-    unitCogsMillimes: cogsMillimes,
-    quantity: qty,
-    shippingMillimes,
-    returnShippingMillimes: 0,
-    courierFeeMillimes,
-    adCpaMillimes,
+    id: '',
+    orderNumber: '',
+    customerName: '',
+    city: '',
+    productName: '',
+    salePrice: priceMillimes,
+    cogs: cogsMillimes,
+    shipping: shippingMillimes,
+    returnShipping: 0,
+    courierFee: courierFeeMillimes,
+    adCpa: adCpaMillimes,
     status: "delivered",
-  });
+    createdAt: '',
+  } as OrderItem);
 
   const refusedNetMillimes = calculateOrderNetContribution({
-    unitPriceMillimes: priceMillimes,
-    unitCogsMillimes: cogsMillimes,
-    quantity: qty,
-    shippingMillimes,
-    returnShippingMillimes: shippingMillimes,
-    courierFeeMillimes,
-    adCpaMillimes,
+    id: '',
+    orderNumber: '',
+    customerName: '',
+    city: '',
+    productName: '',
+    salePrice: priceMillimes,
+    cogs: cogsMillimes,
+    shipping: shippingMillimes,
+    returnShipping: shippingMillimes,
+    courierFee: courierFeeMillimes,
+    adCpa: adCpaMillimes,
     status: "refused",
-  });
+    createdAt: '',
+  } as OrderItem);
 
   const createMutation = useMutation({
     mutationFn: (values: OrderFormValues) => {
@@ -145,7 +156,7 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
       reset();
       onClose();
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toastError(err.message || "Erreur lors de la création de la commande");
     },
   });
@@ -155,7 +166,7 @@ export function CreateOrderDrawer({ open, onClose }: CreateOrderDrawerProps) {
   };
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} title="Créer une commande" position="right">
+    <Drawer open={open} onOpenChange={(isOpen) => !isOpen && onClose()} title="Créer une commande">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4 sm:p-6 pb-24">
         {/* Product selector */}
         <div>

@@ -24,6 +24,8 @@ export function StatusPill({ status, label, className }: StatusPillProps) {
       "bg-negative-tint text-negative-red border-negative-border",
     suspended:
       "bg-negative-tint text-negative-red border-negative-border",
+    cancelled:
+      "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-300 dark:border-neutral-700",
   };
 
   const defaultLabels: Record<string, string> = {
@@ -34,6 +36,7 @@ export function StatusPill({ status, label, className }: StatusPillProps) {
     active: "actif",
     suspended: "suspendu",
     pending: "en attente",
+    cancelled: "annulé",
   };
 
   return (

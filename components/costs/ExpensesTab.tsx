@@ -90,7 +90,7 @@ export function ExpensesTab() {
       case "rent":
         return <Badge variant="info">Loyer</Badge>;
       case "salary":
-        return <Badge variant="success">Salaire</Badge>;
+        return <Badge variant="emerald">Salaire</Badge>;
       case "marketing":
         return <Badge variant="warning">Marketing</Badge>;
       case "logistics":
@@ -165,13 +165,13 @@ export function ExpensesTab() {
             {expenses.map((exp) => (
               <tr key={exp._id} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40">
                 <td className="p-3.5">{getCategoryBadge(exp.category)}</td>
-                <td className="p-3.5 font-medium text-foreground">{exp.description}</td>
+                <td className="p-3.5 font-medium text-foreground">{exp.label}</td>
                 <td className="p-3.5">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
                     {exp.periodType === "monthly" ? "Mensuel" : "Ponctuel"}
                   </span>
                 </td>
-                <td className="p-3.5 text-neutral-400">{formatDate(exp.startDate)}</td>
+                <td className="p-3.5 text-neutral-400">{formatDate(exp.periodStart)}</td>
                 <td className="p-3.5 text-right font-bold tabular-nums text-foreground">
                   {formatMoney(exp.amountMillimes / 1000)}
                 </td>
@@ -198,7 +198,7 @@ export function ExpensesTab() {
       {/* Drawer */}
       <Drawer
         open={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onOpenChange={setIsDrawerOpen}
         title="Ajouter une charge fixe"
       >
         <div className="space-y-4 p-4 sm:p-6 pb-20">
@@ -224,7 +224,7 @@ export function ExpensesTab() {
             <label className="text-xs font-medium text-foreground block mb-1">Type de période</label>
             <Select
               value={periodType}
-              onChange={(e) => setPeriodType(e.target.value as any)}
+              onChange={(e) => setPeriodType(e.target.value as "monthly" | "one-time")}
               options={[
                 { value: "monthly", label: "Mensuel récurrent" },
                 { value: "one-time", label: "Dépense ponctuelle" },
@@ -243,7 +243,7 @@ export function ExpensesTab() {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-foreground block mb-1">Date d'effet</label>
+            <label className="text-xs font-medium text-foreground block mb-1">Date d&apos;effet</label>
             <Input
               type="date"
               value={startDate}

@@ -21,15 +21,16 @@ export function CountUp({
   formatter,
   className = "",
 }: CountUpProps) {
-  const [displayValue, setDisplayValue] = useState<number>(value);
+  const [displayValue, setDisplayValue] = useState<number>(() => value);
   const startValueRef = useRef<number>(value);
   const startTimeRef = useRef<number | null>(null);
   const frameRef = useRef<number | null>(null);
+  const isReducedMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
-    // Check prefers-reduced-motion
-    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setDisplayValue(value);
+    // For reduced motion, just update the ref and let the component re-render naturally
+    if (isReducedMotion) {
+      startValueRef.current = value;
       return;
     }
 
@@ -57,11 +58,12 @@ export function CountUp({
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
-  }, [value, duration]);
+  }, [value, duration, displayValue, isReducedMotion]);
 
+  const finalValue = isReducedMotion ? value : displayValue;
   const formatted = formatter
-    ? formatter(displayValue)
-    : `${prefix}${displayValue.toFixed(decimals)}${suffix}`;
+    ? formatter(finalValue)
+    : `${prefix}${finalValue.toFixed(decimals)}${suffix}`;
 
   return (
     <span className={`tabular-nums ${className}`}>

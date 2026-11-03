@@ -57,7 +57,7 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
               o._id === orderId
                 ? {
                     ...o,
-                    status: status as any,
+                    status: status as OrderResponse['status'],
                     version: o.version + 1,
                   }
                 : o
@@ -68,7 +68,7 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
 
       return { previousData };
     },
-    onError: (err: any, _vars, context) => {
+    onError: (err: Error, _vars, context) => {
       // Rollback on failure
       if (context?.previousData) {
         queryClient.setQueriesData({ queryKey: queryKeys.orders.all }, context.previousData);
@@ -90,7 +90,7 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
       info("Commande supprimée", "Corbeille");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toastError(err.message || "Erreur lors de la suppression");
     },
   });
@@ -111,7 +111,7 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
       success(`${selectedIds.length} commandes mises à jour`);
       setSelectedIds([]);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toastError(err.message || "Erreur lors de la mise à jour groupée");
     },
   });
@@ -327,7 +327,7 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
       {/* Timeline Modal */}
       <StatusTimelineModal
         order={timelineOrder}
-        isOpen={Boolean(timelineOrder)}
+        open={Boolean(timelineOrder)}
         onClose={() => setTimelineOrder(null)}
       />
     </div>

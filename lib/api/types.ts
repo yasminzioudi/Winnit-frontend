@@ -80,6 +80,26 @@ export interface ExpenseResponse {
 export interface ExpensesListResponse {
   data: ExpenseResponse[];
 }
+
+// AdSpend
+export interface AdSpendResponse {
+  _id: string;
+  workspaceId: string;
+  platform: string;
+  campaignName: string;
+  periodStart: string;
+  periodEnd: string;
+  spendMillimes: number;
+  productId?: string;
+  notes?: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdSpendListResponse {
+  data: AdSpendResponse[];
+}
 export interface WaterfallDto {
   grossRevenueMillimes: number;
   productCOGSMillimes: number;

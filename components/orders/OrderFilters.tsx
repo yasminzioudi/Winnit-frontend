@@ -46,17 +46,6 @@ export function OrderFilters({ className = "" }: { className?: string }) {
 
   const [searchTerm, setSearchTerm] = useState(currentSearch);
 
-  // Debounced search input
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (searchTerm !== currentSearch) {
-        updateFilter("search", searchTerm);
-      }
-    }, 300);
-
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
@@ -68,6 +57,17 @@ export function OrderFilters({ className = "" }: { className?: string }) {
     params.delete("cursor");
     router.push(`?${params.toString()}`, { scroll: false });
   };
+
+  // Debounced search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchTerm !== currentSearch) {
+        updateFilter("search", searchTerm);
+      }
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm, currentSearch, updateFilter]);
 
   const hasActiveFilters = Boolean(
     currentSearch || currentStatus || currentCourier || currentGov

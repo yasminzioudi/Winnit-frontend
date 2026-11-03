@@ -26,10 +26,10 @@ export function AdSpendTab() {
   const [campaignName, setCampaignName] = useState("");
   const [productId, setProductId] = useState("prd_001");
   const [spendTnd, setSpendTnd] = useState("100");
-  const [periodStart, setPeriodStart] = useState(
+  const [periodStart, setPeriodStart] = useState(() =>
     new Date(Date.now() - 7 * 86400000).toISOString().substring(0, 10)
   );
-  const [periodEnd, setPeriodEnd] = useState(
+  const [periodEnd, setPeriodEnd] = useState(() =>
     new Date().toISOString().substring(0, 10)
   );
 
@@ -79,7 +79,7 @@ export function AdSpendTab() {
   });
 
   const totalSpendMillimes = adSpends.reduce(
-    (acc, s) => acc + s.spendMillimes,
+    (acc: number, s: AdSpendResponse) => acc + s.spendMillimes,
     0
   );
 
@@ -111,7 +111,7 @@ export function AdSpendTab() {
             </span>
           </div>
           <div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <span className="text-xs text-neutral-500 block">Nombre d'entrées</span>
+            <span className="text-xs text-neutral-500 block">Nombre d&apos;entrées</span>
             <span className="text-xl font-bold tabular-nums text-foreground">
               {adSpends.length}
             </span>
@@ -142,7 +142,7 @@ export function AdSpendTab() {
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-            {adSpends.map((spend) => (
+            {adSpends.map((spend: AdSpendResponse) => (
               <tr key={spend._id} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40">
                 <td className="p-3.5">{getPlatformBadge(spend.platform)}</td>
                 <td className="p-3.5 font-medium text-foreground">{spend.campaignName}</td>
@@ -174,7 +174,7 @@ export function AdSpendTab() {
       </div>
 
       {/* Drawer */}
-      <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} title="Enregistrer une dépense pub">
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} title="Enregistrer une dépense pub">
         <div className="space-y-4 p-4 sm:p-6 pb-20">
           <div>
             <label className="text-xs font-medium text-foreground block mb-1">Plateforme</label>
