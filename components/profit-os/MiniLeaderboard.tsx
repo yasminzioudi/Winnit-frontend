@@ -115,7 +115,7 @@ export function MiniLeaderboard({ winners, isLoading }: MiniLeaderboardProps) {
                         {item.score}/100
                       </div>
                       <Badge
-                        variant={isWinner ? "success" : isSurveiller ? "warning" : "danger"}
+                        variant={isWinner ? "emerald" : isSurveiller ? "warning" : "danger"}
                         className="text-[10px] py-0 px-1"
                       >
                         {item.label}

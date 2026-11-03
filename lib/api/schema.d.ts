@@ -1856,11 +1856,11 @@ export interface operations {
     };
     AnalyticsController_getSummary: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
             };
@@ -1898,11 +1898,11 @@ export interface operations {
     };
     AnalyticsController_getWaterfall: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
             };
@@ -1925,11 +1925,11 @@ export interface operations {
     };
     AnalyticsController_getTimeseries: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
                 granularity?: "daily" | "weekly" | "day" | "week" | "month";
@@ -1963,11 +1963,11 @@ export interface operations {
     };
     AnalyticsController_getByProduct: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
             };
@@ -1998,11 +1998,11 @@ export interface operations {
     };
     AnalyticsController_getByCourier: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
             };
@@ -2033,11 +2033,11 @@ export interface operations {
     };
     AnalyticsController_getCouriersAlias: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
             };
@@ -2060,11 +2060,11 @@ export interface operations {
     };
     AnalyticsController_getByGovernorate: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
             };
@@ -2095,11 +2095,11 @@ export interface operations {
     };
     AnalyticsController_getGeoAlias: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
             };
@@ -2150,11 +2150,11 @@ export interface operations {
     };
     AnalyticsController_getWinners: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
             };
@@ -2185,11 +2185,11 @@ export interface operations {
     };
     InsightsController_getInsights: {
         parameters: {
-            query: {
-                /** @description Start of period (ISO 8601 UTC string) */
-                from: string;
-                /** @description End of period (ISO 8601 UTC string) */
-                to: string;
+            query?: {
+                /** @description Start of period (ISO 8601 UTC string), defaults to 30 days ago */
+                from?: string;
+                /** @description End of period (ISO 8601 UTC string), defaults to now */
+                to?: string;
                 /** @description Comparison period identifier */
                 compare?: string;
             };

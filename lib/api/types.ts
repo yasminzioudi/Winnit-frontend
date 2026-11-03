@@ -6,37 +6,216 @@ export type Schema<T extends keyof components['schemas']> = components['schemas'
 
 // Domain types from openapi schema
 export type CreateOrderDto = Schema<'CreateOrderDto'>;
-export type UpdateOrderStatusDto = Schema<'UpdateOrderStatusDto'>;
+export type UpdateOrderDto = Schema<'UpdateOrderDto'>;
+export type ChangeStatusDto = Schema<'ChangeStatusDto'>;
 export type CreateAdSpendDto = Schema<'CreateAdSpendDto'>;
+export type UpdateAdSpendDto = Schema<'UpdateAdSpendDto'>;
 export type CreateExpenseDto = Schema<'CreateExpenseDto'>;
+export type UpdateExpenseDto = Schema<'UpdateExpenseDto'>;
 export type CreateScenarioDto = Schema<'CreateScenarioDto'>;
 export type CreateSettlementDto = Schema<'CreateSettlementDto'>;
 export type OptimizePriceDto = Schema<'OptimizePriceDto'>;
 
-// Response types (from endpoints)
-export type OrderResponse = paths['/api/v1/orders']['get']['responses']['200']['content']['application/json']['data'][number];
-export type OrdersListResponse = paths['/api/v1/orders']['get']['responses']['200']['content']['application/json'];
+// Response types - defined manually since backend Swagger doesn't export them
 
-export type AdSpendResponse = paths['/api/v1/ad-spend']['get']['responses']['200']['content']['application/json']['data'][number];
-export type AdSpendListResponse = paths['/api/v1/ad-spend']['get']['responses']['200']['content']['application/json'];
+// Orders
+export interface OrderResponse {
+  _id: string;
+  workspaceId: string;
+  orderNumber: string;
+  productId: string;
+  productNameSnapshot: string;
+  quantity: number;
+  unitPriceMillimes: number;
+  unitCogsMillimes: number;
+  shippingMillimes: number;
+  returnShippingMillimes: number;
+  courierFeeMillimes: number;
+  adCpaMillimes: number;
+  courier: 'yalidine' | 'aramex';
+  customer: {
+    firstName: string;
+    city: string;
+    governorate: string;
+  };
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'refused' | 'cancelled';
+  statusHistory: Array<{
+    status: string;
+    changedAt: string;
+    changedBy: string;
+  }>;
+  placedAt: string;
+  deliveredAt?: string | null;
+  netContributionMillimes: number;
+  settlementId?: string;
+  version: number;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
-export type ExpenseResponse = paths['/api/v1/expenses']['get']['responses']['200']['content']['application/json']['data'][number];
-export type ExpensesListResponse = paths['/api/v1/expenses']['get']['responses']['200']['content']['application/json'];
+export interface OrdersListResponse {
+  data: OrderResponse[];
+  pagination: {
+    limit: number;
+    nextCursor?: string;
+  };
+}
 
-export type ScenarioResponse = paths['/api/v1/scenarios']['get']['responses']['200']['content']['application/json']['data'][number];
-export type ScenariosListResponse = paths['/api/v1/scenarios']['get']['responses']['200']['content']['application/json'];
+// Expenses
+export interface ExpenseResponse {
+  _id: string;
+  workspaceId: string;
+  category: string;
+  label: string;
+  amountMillimes: number;
+  periodType: 'one-time' | 'monthly';
+  periodStart: string;
+  periodEnd?: string;
+  notes?: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
-export type SettlementResponse = paths['/api/v1/settlements']['get']['responses']['200']['content']['application/json']['data'][number];
-export type SettlementsListResponse = paths['/api/v1/settlements']['get']['responses']['200']['content']['application/json'];
+export interface ExpensesListResponse {
+  data: ExpenseResponse[];
+}
+export interface WaterfallDto {
+  grossRevenueMillimes: number;
+  productCOGSMillimes: number;
+  outboundShippingMillimes: number;
+  paidAdSpendMillimes: number;
+  codRefusalPenaltyMillimes: number;
+  netRealizedContributionMillimes: number;
+  netProfitMarginPercent: number;
+}
 
-export type AnalyticsSummaryResponse = paths['/api/v1/analytics/summary']['get']['responses']['200']['content']['application/json'];
-export type TimeseriesResponse = paths['/api/v1/analytics/timeseries']['get']['responses']['200']['content']['application/json'];
-export type ProductAnalyticsItem = paths['/api/v1/analytics/by-product']['get']['responses']['200']['content']['application/json'][number];
-export type CourierAnalyticsItem = paths['/api/v1/analytics/by-courier']['get']['responses']['200']['content']['application/json'][number];
-export type GovernorateAnalyticsItem = paths['/api/v1/analytics/by-governorate']['get']['responses']['200']['content']['application/json'][number];
-export type CODAnalyticsResponse = paths['/api/v1/analytics/cod']['get']['responses']['200']['content']['application/json'];
-export type WinnerRankingItem = paths['/api/v1/analytics/winners']['get']['responses']['200']['content']['application/json'][number];
+export interface KPIsDto {
+  totalOrdersCount: number;
+  deliveredCount: number;
+  refusedCount: number;
+  deliveryRatePercent: number;
+  refusalRatePercent: number;
+  averageOrderValueMillimes: number;
+}
 
-export type Insight = paths['/api/v1/insights']['get']['responses']['200']['content']['application/json'][number];
-export type OptimizePriceResponse = paths['/api/v1/pricing/optimize']['post']['responses']['200']['content']['application/json'];
+export interface ExpenseSummaryDto {
+  fixedExpensesMillimes: number;
+  resultAfterFixedExpensesMillimes: number;
+  netProfitMarginPercent: number;
+}
+
+export interface AnalyticsSummaryResponse {
+  waterfall: WaterfallDto;
+  kpis: KPIsDto;
+  expenses: ExpenseSummaryDto;
+  adSpendDeltaMillimes: number;
+}
+
+export interface TimeseriesBucketDto {
+  period: string;
+  grossRevenueMillimes: number;
+  netContributionMillimes: number;
+  ordersCount: number;
+  adSpendMillimes: number;
+}
+
+export interface TimeseriesResponse {
+  buckets: TimeseriesBucketDto[];
+  granularity: string;
+}
+
+export type TimeseriesBucket = TimeseriesBucketDto;
+
+export interface ProductAnalyticsItemDto {
+  productId: string;
+  productName: string;
+  totalOrders: number;
+  deliveredOrders: number;
+  refusedOrders: number;
+  grossRevenueMillimes: number;
+  netContributionMillimes: number;
+  adSpendMillimes: number;
+  roas: number;
+}
+
+export interface ProductAnalyticsResponse {
+  products: ProductAnalyticsItemDto[];
+}
+
+export type ProductAnalyticsItem = ProductAnalyticsItemDto;
+
+export interface CourierAnalyticsItemDto {
+  courier: string;
+  deliveredOrders: number;
+  refusedOrders: number;
+  totalRevenue: number;
+  pendingPayoutsMillimes: number;
+}
+
+export interface CourierAnalyticsResponse {
+  couriers: CourierAnalyticsItemDto[];
+}
+
+export type CourierAnalyticsItem = CourierAnalyticsItemDto;
+
+export interface GovernorateAnalyticsItemDto {
+  governorate: string;
+  ordersCount: number;
+  deliveredOrders: number;
+  refusedOrders: number;
+  grossRevenueMillimes: number;
+}
+
+export interface GovernorateAnalyticsResponse {
+  governorates: GovernorateAnalyticsItemDto[];
+}
+
+export type GovernorateAnalyticsItem = GovernorateAnalyticsItemDto;
+
+export interface CODAnalyticsResponse {
+  summary: {
+    pendingCourierPayoutsMillimes: number;
+    bankWireSettledMillimes: number;
+    expectedCashCollectionsMillimes: number;
+    oldestPendingPayoutAgeDays: number;
+    settledNetMillimes: number;
+    totalExpectedMillimes: number;
+  };
+  aging: {
+    days0to7Count: number;
+    days8to14Count: number;
+    days15to30Count: number;
+    daysOver30Count: number;
+  };
+}
+
+export interface WinnerRankingItemDto {
+  productId: string;
+  productName: string;
+  score: number;
+  label: string;
+  totalOrders: number;
+  deliveredOrders: number;
+  grossRevenueMillimes: number;
+}
+
+export interface WinnersResponse {
+  products: WinnerRankingItemDto[];
+}
+
+export type WinnerRankingItem = WinnerRankingItemDto;
+
+export interface InsightDto {
+  id: string;
+  severity: 'critical' | 'warning' | 'info';
+  title: string;
+  evidence: string;
+  suggestedAction: string;
+  deepLink?: string;
+}
+
+export type InsightsResponse = InsightDto[];
+export type Insight = InsightDto;
 

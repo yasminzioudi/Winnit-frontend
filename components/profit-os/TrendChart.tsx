@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { Card } from "@/components/ui/Card";
 import { formatMoney } from "@/lib/format/currency";
-import type { TimeseriesResponse } from "@/lib/api/types";
+import type { TimeseriesResponse, TimeseriesBucket } from "@/lib/api/types";
 
 interface TrendChartProps {
   data?: TimeseriesResponse;
@@ -29,7 +29,7 @@ export function TrendChart({ data, isLoading }: TrendChartProps) {
     );
   }
 
-  const chartData = data.buckets.map((b) => ({
+  const chartData = data.buckets.map((b: TimeseriesBucket) => ({
     date: b.period.length > 10 ? b.period.substring(0, 10) : b.period,
     revenueTnd: Math.round(b.grossRevenueMillimes / 1000),
     netTnd: Math.round(b.netContributionMillimes / 1000),

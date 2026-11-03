@@ -31,7 +31,7 @@ export function ErrorState({
       </p>
       {onRetry && (
         <Button
-          variant="secondary"
+          variant="outline"
           size="sm"
           onClick={onRetry}
           className="gap-2"
