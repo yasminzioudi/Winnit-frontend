@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { BrandSwitcher } from "./BrandSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
+import { InstallCard } from "@/components/pwa/InstallCard";
+import { OnlinePill } from "@/components/pwa/OnlinePill";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -129,6 +131,12 @@ export function Topbar({
 
       {/* Right side action controls */}
       <div className="flex items-center gap-2 sm:gap-2.5">
+        {/* Online/Offline Status */}
+        <OnlinePill />
+
+        {/* Install PWA Button */}
+        <InstallCard />
+
         {/* Mobile Search Button */}
         <button
           type="button"

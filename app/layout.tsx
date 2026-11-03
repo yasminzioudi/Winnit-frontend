@@ -71,7 +71,6 @@ export default function RootLayout({
             </AuthProvider>
           </ToastProvider>
         </QueryProvider>
-        <RegisterSW />
       </body>
     </html>
   );
