@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/hooks/useToast";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -17,6 +17,28 @@ import { QueryProvider } from "@/components/providers/QueryProvider";
 export const metadata: Metadata = {
   title: "WINNIT OS — Profit & E-Commerce Growth",
   description: "Système d'exploitation financière et de rentabilité pour e-commerçants COD en Tunisie",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "WINNIT",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#a3e635" },
+    { media: "(prefers-color-scheme: dark)", color: "#a3e635" },
+  ],
 };
 
 export default function RootLayout({
@@ -40,6 +62,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-sans bg-background text-foreground min-h-screen">
+        <RegisterSW />
         <QueryProvider>
           <ToastProvider>
             <AuthProvider>
