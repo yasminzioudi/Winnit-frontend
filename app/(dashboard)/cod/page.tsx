@@ -22,8 +22,11 @@ function CODPageContent() {
   const { success, error: toastError } = useToast();
   const [showReconcileConfirm, setShowReconcileConfirm] = useState(false);
 
-  const periodParam = (searchParams.get("period") as PeriodKey) || "30d";
-  const defaultDates = getDatesForPeriod(periodParam);
+  const periodParam = (searchParams.get("period") as PeriodKey) || "90d";
+  
+  // Initialize dates in useState to avoid hydration issues
+  const [defaultDates] = useState(() => getDatesForPeriod(periodParam));
+  
   const from = searchParams.get("from") || defaultDates.from;
   const to = searchParams.get("to") || defaultDates.to;
 

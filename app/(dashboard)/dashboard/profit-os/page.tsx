@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -34,8 +34,10 @@ const TrendChart = dynamic(
 
 function ProfitOSDashboardContent() {
   const searchParams = useSearchParams();
-  const periodParam = (searchParams.get("period") as PeriodKey) || "30d";
-  const defaultDates = getDatesForPeriod(periodParam);
+  const periodParam = (searchParams.get("period") as PeriodKey) || "90d";
+  
+  // Initialize dates in useState to avoid hydration issues
+  const [defaultDates] = useState(() => getDatesForPeriod(periodParam));
 
   const from = searchParams.get("from") || defaultDates.from;
   const to = searchParams.get("to") || defaultDates.to;

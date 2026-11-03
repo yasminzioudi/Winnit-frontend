@@ -20,8 +20,9 @@ const PERIOD_OPTIONS: PeriodOption[] = [
 ];
 
 export function getDatesForPeriod(period: PeriodKey): { from: string; to: string } {
-  // Deterministic reference anchor: 2026-03-31T23:59:59.000Z matches seeded dataset
-  const now = new Date('2026-03-31T23:59:59.000Z');
+  // Get current time in Africa/Tunis timezone (UTC+1)
+  // Using Date() directly here is safe - this function is only called in event handlers or useState initializers
+  const now = new Date();
   const to = now.toISOString();
 
   let fromDate: Date;
@@ -36,10 +37,11 @@ export function getDatesForPeriod(period: PeriodKey): { from: string; to: string
       fromDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
       break;
     case "month":
-      fromDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      // First day of current month to now
+      fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
       break;
     default:
-      fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      fromDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
   }
 
   return { from: fromDate.toISOString(), to };
@@ -50,7 +52,7 @@ export function PeriodPicker({ className = "" }: { className?: string }) {
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const currentPeriod = (searchParams.get("period") as PeriodKey) || "30d";
+  const currentPeriod = (searchParams.get("period") as PeriodKey) || "90d";
 
   const handleSelect = (key: PeriodKey) => {
     const { from, to } = getDatesForPeriod(key);
