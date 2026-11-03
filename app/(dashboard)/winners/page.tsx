@@ -1,6 +1,4 @@
-'use client';
-
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { ProfitOSSubNav } from '@/components/profit-os/SubNav';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
@@ -8,7 +6,7 @@ import type { WinnerAnalysis } from '@/lib/api/types';
 import { useSearchParams } from 'next/navigation';
 import { PeriodPicker, getDatesForPeriod, type PeriodKey } from '@/components/profit-os/PeriodPicker';
 
-export default function WinnersPage() {
+function WinnersContent() {
   const searchParams = useSearchParams();
   const periodParam = (searchParams.get('period') as PeriodKey) || '90d';
   
@@ -380,5 +378,25 @@ function ScoreBreakdown({
         ))}
       </div>
     </div>
+  );
+}
+
+export default function WinnersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6 space-y-6 animate-pulse">
+          <div className="h-10 bg-layer-3 rounded w-1/3" />
+          <div className="grid grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 bg-layer-2 rounded-lg" />
+            ))}
+          </div>
+          <div className="h-96 bg-layer-2 rounded-lg" />
+        </div>
+      }
+    >
+      <WinnersContent />
+    </Suspense>
   );
 }

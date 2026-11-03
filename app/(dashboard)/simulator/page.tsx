@@ -1,8 +1,6 @@
 'use client';
 
-'use client';
-
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ProfitOSSubNav } from '@/components/profit-os/SubNav';
 import { apiClient } from '@/lib/api/client';
@@ -13,7 +11,7 @@ import {
 } from '@/lib/finance/profit';
 import type { Scenario, PricingCurvePoint } from '@/lib/api/types';
 
-export default function SimulatorPage() {
+function SimulatorContent() {
   const queryClient = useQueryClient();
 
   // Input sliders (millimes)
@@ -822,5 +820,31 @@ function ScenarioComparison({ scenarios }: { scenarios: Scenario[] }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+
+export default function SimulatorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6 space-y-6 animate-pulse">
+          <div className="h-10 bg-layer-3 rounded w-1/3" />
+          <div className="grid grid-cols-3 gap-6">
+            <div className="col-span-2 space-y-6">
+              <div className="h-96 bg-layer-2 rounded-lg" />
+              <div className="h-64 bg-layer-2 rounded-lg" />
+            </div>
+            <div className="space-y-6">
+              <div className="h-32 bg-layer-2 rounded-lg" />
+              <div className="h-32 bg-layer-2 rounded-lg" />
+              <div className="h-32 bg-layer-2 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <SimulatorContent />
+    </Suspense>
   );
 }
