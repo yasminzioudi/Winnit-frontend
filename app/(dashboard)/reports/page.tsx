@@ -50,23 +50,20 @@ function ReportsContent() {
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ReportHistory[]>([]);
 
-  // Fetch data
+  // Fetch data - always fetch for PDF generation
   const { data: summary } = useQuery({
     queryKey: ['analytics-summary', from, to],
     queryFn: () => apiGet<ProfitOSMetrics>(`/analytics/summary?from=${from}&to=${to}`),
-    enabled: ['summary', 'complete'].includes(reportType),
   });
 
   const { data: winners } = useQuery({
     queryKey: ['winners', from, to],
     queryFn: () => apiClient.getWinners(from, to),
-    enabled: ['winners', 'complete'].includes(reportType),
   });
 
   const { data: cod } = useQuery({
     queryKey: ['cod', from, to],
     queryFn: () => apiGet<CODAnalyticsResponse>(`/analytics/cod?from=${from}&to=${to}`),
-    enabled: ['cod', 'summary', 'complete'].includes(reportType),
   });
 
   const { data: expenses } = useQuery({

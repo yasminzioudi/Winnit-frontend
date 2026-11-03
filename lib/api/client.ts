@@ -270,9 +270,7 @@ export const apiClient = {
 
   // Winners
   getWinners: (from: string, to: string) =>
-    apiGet<WinnersListResponse>(`/analytics/winners?from=${from}&to=${to}`).then(
-      (res) => res.data
-    ),
+    apiGet<WinnerAnalysis[]>(`/analytics/winners?from=${from}&to=${to}`),
 
   // Scenarios
   getScenarios: () =>
