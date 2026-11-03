@@ -420,7 +420,7 @@ function SimulatorContent() {
                       </button>
                       <button
                         onClick={() => deleteScenarioMutation.mutate(scenario._id)}
-                        className="p-1 rounded bg-layer-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20"
+                        className="p-1 rounded bg-layer-2 text-[var(--negative-red)] hover:bg-[var(--negative-tint)]"
                         title="Supprimer"
                       >
                         <svg
@@ -534,9 +534,9 @@ function MetricTile({
   status: 'good' | 'warning' | 'bad';
 }) {
   const statusColors = {
-    good: 'border-green-500 bg-green-50 dark:bg-green-950/20',
-    warning: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20',
-    bad: 'border-red-500 bg-red-50 dark:bg-red-950/20',
+    good: 'border-[var(--positive-emerald)] bg-[var(--positive-mint)]',
+    warning: 'border-[var(--warning-amber)] bg-[var(--warning-cream)]',
+    bad: 'border-[var(--negative-red)] bg-[var(--negative-tint)]',
   };
 
   const displayValue = unit === 'TND' ? (value / 1000).toFixed(2) : value.toFixed(2);
@@ -614,7 +614,7 @@ function ProfitCurve({
             }
             height="260"
             fill="currentColor"
-            className="text-green-500 opacity-10"
+            className="text-[var(--positive-emerald)] opacity-10"
           />
         )}
 
@@ -633,7 +633,7 @@ function ProfitCurve({
           stroke="currentColor"
           strokeWidth="2"
           strokeDasharray="4 4"
-          className="text-red-500"
+          className="text-[var(--negative-red)]"
         />
 
         {/* Profit curve */}
@@ -725,7 +725,7 @@ function ProfitCurve({
           <span>Break-even</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-green-500 opacity-30" />
+          <div className="w-3 h-3 bg-[var(--positive-emerald)] opacity-30" />
           <span>Zone recommandée</span>
         </div>
       </div>
@@ -810,7 +810,7 @@ function ScenarioComparison({ scenarios }: { scenarios: Scenario[] }) {
               <td
                 key={i}
                 className={`text-right py-2 font-semibold ${
-                  m.netProfit > 0 ? 'text-green-600' : 'text-red-600'
+                  m.netProfit > 0 ? 'text-[var(--positive-emerald)]' : 'text-[var(--negative-red)]'
                 }`}
               >
                 {m.netProfit.toFixed(2)} TND

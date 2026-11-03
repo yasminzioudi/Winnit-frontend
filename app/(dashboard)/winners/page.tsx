@@ -69,8 +69,8 @@ function WinnersContent() {
 
       {/* Error state */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-          <p className="text-sm text-red-800 dark:text-red-200">
+        <div className="bg-[var(--negative-tint)] border border-[var(--negative-border)] rounded-lg p-6">
+          <p className="text-sm text-[var(--negative-red)]">
             Impossible de charger les données. Vérifiez votre connexion.
           </p>
         </div>
@@ -283,19 +283,19 @@ function StatusBadge({ label }: { label: string }) {
     { bg: string; text: string; border: string }
   > = {
     Winner: {
-      bg: 'bg-green-100 dark:bg-green-950/30',
-      text: 'text-green-800 dark:text-green-200',
-      border: 'border-green-200 dark:border-green-800',
+      bg: 'bg-[var(--positive-mint)]',
+      text: 'text-[var(--positive-emerald)]',
+      border: 'border-[var(--positive-border)]',
     },
     'À surveiller': {
-      bg: 'bg-yellow-100 dark:bg-yellow-950/30',
-      text: 'text-yellow-800 dark:text-yellow-200',
-      border: 'border-yellow-200 dark:border-yellow-800',
+      bg: 'bg-[var(--warning-cream)]',
+      text: 'text-[var(--warning-amber)]',
+      border: 'border-[var(--warning-border)]',
     },
     'À couper': {
-      bg: 'bg-red-100 dark:bg-red-950/30',
-      text: 'text-red-800 dark:text-red-200',
-      border: 'border-red-200 dark:border-red-800',
+      bg: 'bg-[var(--negative-tint)]',
+      text: 'text-[var(--negative-red)]',
+      border: 'border-[var(--negative-border)]',
     },
     'Données insuffisantes': {
       bg: 'bg-gray-100 dark:bg-gray-950/30',
@@ -368,10 +368,10 @@ function ScoreBreakdown({
               <div
                 className={`h-full ${
                   component.score >= 70
-                    ? 'bg-green-500'
+                    ? 'bg-[var(--positive-emerald)]'
                     : component.score >= 40
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
+                      ? 'bg-[var(--warning-amber)]'
+                      : 'bg-[var(--negative-red)]'
                 }`}
                 style={{ width: `${component.score}%` }}
               />
