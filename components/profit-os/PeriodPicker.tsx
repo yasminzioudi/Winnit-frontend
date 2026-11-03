@@ -87,7 +87,7 @@ export function PeriodPicker({ className = "" }: { className?: string }) {
             className={cn(
               "px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer select-none",
               isActive
-                ? "bg-primary text-white shadow-xs font-semibold"
+                ? "bg-ink text-ink-inverted shadow-xs font-semibold"
                 : "text-neutral-600 dark:text-neutral-400 hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800"
             )}
           >
