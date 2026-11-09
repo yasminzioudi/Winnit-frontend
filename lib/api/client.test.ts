@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import type { AskCfoResponse } from './client';
 
 /**
  * Test that validates the API response structure matches what the client expects.
@@ -126,3 +127,22 @@ test('PDF data validation - all required fields present', () => {
   const isValidWithEmpty = !!(mockSummary && mockCOD && emptyWinners);
   assert.ok(isValidWithEmpty, 'Empty winners array should still pass validation');
 });
+
+test('Copilote CFO - AskCfoResponse structure and verified figures validation', () => {
+  const mockCfoResponse: AskCfoResponse = {
+    answer: 'Votre marge nette après dépenses fixes atteint 32 000 TND (25.6%).',
+    citations: ['summary.expenses'],
+    figures: [
+      { label: 'Net Profit', value: 32000, unit: 'TND', source: 'expenses', verified: true },
+      { label: 'Marge Nette', value: 25.6, unit: '%', source: 'expenses', verified: true },
+    ],
+    isVerified: true,
+  };
+
+  assert.equal(typeof mockCfoResponse.answer, 'string');
+  assert.equal(mockCfoResponse.isVerified, true);
+  assert.equal(mockCfoResponse.figures.length, 2);
+  assert.equal(mockCfoResponse.figures[0].verified, true);
+  assert.equal(mockCfoResponse.figures[0].value, 32000);
+});
+

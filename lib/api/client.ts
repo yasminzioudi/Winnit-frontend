@@ -292,4 +292,32 @@ export const apiClient = {
   // Products
   getProducts: () =>
     apiGet<ProductListResponse>('/products').then((res) => res.data),
+
+  // AI Copilot CFO
+  askCfo: (data: AskCfoRequest) =>
+    apiPost<AskCfoResponse>('/ai/ask', data),
 };
+
+export const api = apiClient;
+
+export interface AskCfoRequest {
+  question: string;
+  from: string;
+  to: string;
+}
+
+export interface CfoFigure {
+  label: string;
+  value: number;
+  unit: string;
+  source: string;
+  verified: boolean;
+}
+
+export interface AskCfoResponse {
+  answer: string;
+  citations: string[];
+  figures: CfoFigure[];
+  isVerified: boolean;
+}
+

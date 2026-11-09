@@ -5,6 +5,7 @@ import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { MobileDrawer } from "./MobileDrawer";
 import { CommandPalette } from "./CommandPalette";
+import { CopilotPanel } from "@/components/ai/CopilotPanel";
 import { useIsClient } from "@/hooks/useIsClient";
 
 export interface DashboardShellProps {
@@ -25,6 +26,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [copilotOpen, setCopilotOpen] = useState(false);
 
   const handleToggleCollapse = () => {
     const nextState = !sidebarCollapsed;
@@ -59,6 +61,12 @@ export function DashboardShell({ children }: DashboardShellProps) {
         onOpenChange={setSearchOpen}
       />
 
+      {/* Copilot CFO Side Panel */}
+      <CopilotPanel
+        open={copilotOpen}
+        onOpenChange={setCopilotOpen}
+      />
+
       {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ${
@@ -70,6 +78,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <Topbar
           onOpenSearch={() => setSearchOpen(true)}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
+          onOpenCopilot={() => setCopilotOpen(true)}
         />
 
         <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto min-w-0 animate-in fade-in duration-150">

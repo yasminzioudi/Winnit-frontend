@@ -29,12 +29,14 @@ export interface TopbarProps {
   onOpenSearch: () => void;
   onOpenMobileMenu?: () => void;
   onOpenGrowthAgent?: () => void;
+  onOpenCopilot?: () => void;
 }
 
 export function Topbar({
   onOpenSearch,
   onOpenMobileMenu,
   onOpenGrowthAgent,
+  onOpenCopilot,
 }: TopbarProps) {
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -158,23 +160,24 @@ export function Topbar({
           </Link>
         </Tooltip>
 
-        {/* Growth Agent Lime CTA Button */}
+        {/* Copilot CFO Lime CTA Button */}
         <Button
           variant="brand"
           size="sm"
           onClick={
+            onOpenCopilot ||
             onOpenGrowthAgent ||
             (() =>
               info(
-                "Growth Agent IA activé — Recommandations COD prêtes.",
-                "Agent IA"
+                "Copilote CFO IA prêt — Posez vos questions de rentabilité.",
+                "Copilote IA"
               ))
           }
           className="rounded-full px-3.5 text-xs font-bold gap-1.5 text-black shadow-sm"
-          aria-label="Lancer le Growth Agent IA"
+          aria-label="Lancer le Copilote CFO IA"
         >
           <Zap className="w-3.5 h-3.5 fill-black" />
-          <span className="hidden xs:inline">Growth Agent</span>
+          <span className="hidden xs:inline">Copilote</span>
         </Button>
 
         {/* Notifications Icon Button */}
