@@ -12,6 +12,7 @@ import {
   Bot,
   User,
   Loader2,
+  RotateCw,
 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
@@ -47,8 +48,12 @@ export function CopilotPanel({ open, onOpenChange }: CopilotPanelProps) {
   const { info, error: showError } = useToast();
 
   const [question, setQuestion] = useState("");
+  const [lastQuestion, setLastQuestion] = useState("");
   const [loading, setLoading] = useState(false);
-  const [unavailable, setUnavailable] = useState(false);
+  const [errorBanner, setErrorBanner] = useState<{
+    type: "timeout" | "config" | "generic";
+    message: string;
+  } | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
 
   // Period defaults to active Profit OS period
@@ -66,6 +71,7 @@ export function CopilotPanel({ open, onOpenChange }: CopilotPanelProps) {
     const q = (queryText || question).trim();
     if (!q || loading) return;
 
+    setLastQuestion(q);
     setMessages((prev) => [
       ...prev,
       {
@@ -76,6 +82,7 @@ export function CopilotPanel({ open, onOpenChange }: CopilotPanelProps) {
     ]);
     setQuestion("");
     setLoading(true);
+    setErrorBanner(null);
 
     const { from, to } = getActivePeriodDates();
 
@@ -97,19 +104,37 @@ export function CopilotPanel({ open, onOpenChange }: CopilotPanelProps) {
           isVerified: res.isVerified,
         },
       ]);
-      setUnavailable(false);
+      setErrorBanner(null);
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
+      const lower = errorMsg.toLowerCase();
+
       if (
-        errorMsg.includes("503") ||
-        errorMsg.toLowerCase().includes("indisponible") ||
-        errorMsg.toLowerCase().includes("gemini")
+        lower.includes("trop de temps") ||
+        lower.includes("timeout") ||
+        lower.includes("timed out") ||
+        lower.includes("504")
       ) {
-        setUnavailable(true);
+        setErrorBanner({
+          type: "timeout",
+          message: "Le Copilote met trop de temps, réessayez",
+        });
+      } else if (
+        lower.includes("configuration") ||
+        lower.includes("cle") ||
+        lower.includes("clé") ||
+        lower.includes("gemini") ||
+        lower.includes("indisponible") ||
+        lower.includes("503")
+      ) {
+        setErrorBanner({
+          type: "config",
+          message: "Copilote indisponible — vérifiez la configuration",
+        });
       } else {
         showError(
           errorMsg || "Impossible d'obtenir une réponse du Copilote.",
-          "Erreur Copilote"
+          "Erreur Copilote",
         );
       }
     } finally {
@@ -120,7 +145,7 @@ export function CopilotPanel({ open, onOpenChange }: CopilotPanelProps) {
   const handleChipClick = (fig: CfoFigure) => {
     info(
       `${fig.label} : ${fig.value.toLocaleString("fr-FR")} ${fig.unit} (Source: ${fig.source})`,
-      "Chiffre certifié"
+      "Chiffre certifié",
     );
   };
 
@@ -133,28 +158,44 @@ export function CopilotPanel({ open, onOpenChange }: CopilotPanelProps) {
       className="max-w-lg"
     >
       <div className="flex flex-col h-[calc(100vh-140px)] justify-between gap-4">
-        {/* Top Disclaimer / Unavailable Banner */}
-        {unavailable && (
+        {/* Error / Timeout Banner with Retry */}
+        {errorBanner && (
           <div
             role="alert"
-            className="p-3.5 rounded-xl border border-warning-border bg-warning-cream/40 text-xs text-foreground flex items-start gap-2.5 shadow-2xs"
+            className="p-3.5 rounded-xl border border-warning-border bg-warning-cream/40 text-xs text-foreground flex items-start justify-between gap-2.5 shadow-2xs"
           >
-            <AlertTriangle className="w-4 h-4 text-warning-amber shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-warning-amber">
-                Copilote indisponible — configurez votre clé Gemini
-              </p>
-              <p className="text-muted mt-0.5">
-                Vérifiez la variable GEMINI_API_KEY dans votre environnement. Les
-                calculs purs de Profit OS continuent de fonctionner normalement.
-              </p>
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-warning-amber shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-warning-amber">
+                  {errorBanner.message}
+                </p>
+                <p className="text-muted mt-0.5">
+                  {errorBanner.type === "timeout"
+                    ? "La requête a dépassé le délai imparti. Cliquez sur Réessayer."
+                    : "Vérifiez vos paramètres GEMINI_API_KEY et GEMINI_MODEL."}
+                </p>
+              </div>
             </div>
+            {lastQuestion && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleAsk(lastQuestion)}
+                disabled={loading}
+                className="shrink-0 text-xs gap-1.5 h-8 px-2.5"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+                <span>Réessayer</span>
+              </Button>
+            )}
           </div>
         )}
 
         {/* Message Thread */}
         <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-          {messages.length === 0 && !unavailable && (
+          {messages.length === 0 && !errorBanner && (
             <div className="text-center py-8 px-2 space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-surface-subtle border border-border flex items-center justify-center mx-auto text-brand-lime">
                 <Sparkles className="w-6 h-6 fill-brand-lime" />
@@ -295,14 +336,14 @@ export function CopilotPanel({ open, onOpenChange }: CopilotPanelProps) {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="Posez une question sur votre rentabilité..."
-              disabled={loading || unavailable}
+              disabled={loading}
               className="flex-1 px-3.5 py-2.5 rounded-xl border border-border bg-surface text-xs text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-lime disabled:opacity-50 transition-shadow"
             />
             <Button
               type="submit"
               variant="brand"
               size="sm"
-              disabled={loading || !question.trim() || unavailable}
+              disabled={loading || !question.trim()}
               className="rounded-xl px-3.5 py-2.5 text-black font-semibold h-auto"
               aria-label="Envoyer la question"
             >
@@ -325,4 +366,3 @@ export function CopilotPanel({ open, onOpenChange }: CopilotPanelProps) {
     </Drawer>
   );
 }
-
