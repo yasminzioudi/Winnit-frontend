@@ -81,3 +81,4 @@ test("Responsive Layout - 1440px desktop viewport does not horizontally overflow
   const scrollWidth = totalSubnavWidth + sidebarWidth + paddingX;
   assert.ok(scrollWidth <= innerWidth);
 });
+

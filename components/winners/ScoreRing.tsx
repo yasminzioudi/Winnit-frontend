@@ -65,3 +65,4 @@ export function ScoreRing({ score, size = "md", className = "" }: ScoreRingProps
     </div>
   );
 }
+

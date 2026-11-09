@@ -118,3 +118,4 @@ export function CodKpiCards({ data, isLoading }: CodKpiCardsProps) {
     </div>
   );
 }
+

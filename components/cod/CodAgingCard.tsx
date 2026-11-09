@@ -117,3 +117,4 @@ export function CodAgingCard({ aging, isLoading }: CodAgingCardProps) {
     </Card>
   );
 }
+

@@ -155,3 +155,4 @@ export function WinnersPodium({ winners, onSelectProduct }: WinnersPodiumProps) 
     </Card>
   );
 }
+

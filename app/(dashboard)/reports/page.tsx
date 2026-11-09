@@ -1,82 +1,99 @@
-'use client';
+"use client";
 
-import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { ProfitOSSubNav } from '@/components/profit-os/SubNav';
-import { PeriodPicker, getDatesForPeriod, type PeriodKey } from '@/components/profit-os/PeriodPicker';
-import { apiClient, apiGet } from '@/lib/api/client';
+import React, { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { ProfitOSContainer } from "@/components/profit-os/ProfitOSContainer";
+import { ProfitOSSubNav } from "@/components/profit-os/SubNav";
+import { PeriodPicker, getDatesForPeriod, type PeriodKey } from "@/components/profit-os/PeriodPicker";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import {
+  ReportTypeCardGrid,
+  type ReportType,
+} from "@/components/reports/ReportTypeCardGrid";
+import { ReportFiguresPreview } from "@/components/reports/ReportFiguresPreview";
+import {
+  ReportHistoryList,
+  type ReportHistoryItem,
+} from "@/components/reports/ReportHistoryList";
+import { useToast } from "@/hooks/useToast";
+import { apiClient, apiGet } from "@/lib/api/client";
+import { queryKeys } from "@/lib/api/query-keys";
 import type {
-  OrderResponse,
-  ExpenseResponse,
-  AdSpendResponse,
-  WinnerAnalysis,
   ProfitOSMetrics,
   CODAnalyticsResponse,
+  ExpenseResponse,
+  AdSpendResponse,
+  OrderResponse,
   OrdersListResponse,
-} from '@/lib/api/types';
+  AdSpendListResponse,
+} from "@/lib/api/types";
 import {
   ordersToRows,
   expensesToRows,
   adSpendToRows,
   winnersToRows,
   summaryToRows,
-} from '@/lib/reports/data-to-rows';
-import { downloadCSV, generateCSVFilename } from '@/lib/reports/csv';
-import { downloadXLSX, generateXLSXFilename } from '@/lib/reports/xlsx';
-import { downloadPDF, generatePDFFilename } from '@/lib/reports/pdf';
-import { FileText, Download, FileSpreadsheet, FileDown } from 'lucide-react';
-
-type ReportType = 'summary' | 'orders' | 'winners' | 'cod' | 'complete';
-
-interface ReportHistory {
-  id: string;
-  type: ReportType;
-  format: 'csv' | 'xlsx' | 'pdf';
-  timestamp: string;
-  filename: string;
-}
+} from "@/lib/reports/data-to-rows";
+import { downloadCSV, generateCSVFilename } from "@/lib/reports/csv";
+import { downloadXLSX, generateXLSXFilename } from "@/lib/reports/xlsx";
+import { downloadPDF, generatePDFFilename } from "@/lib/reports/pdf";
+import { FileText, FileSpreadsheet, FileDown, Loader2 } from "lucide-react";
 
 function ReportsContent() {
   const searchParams = useSearchParams();
-  const periodParam = (searchParams.get('period') as PeriodKey) || '90d';
+  const { success, error: toastError } = useToast();
+
+  const periodParam = (searchParams.get("period") as PeriodKey) || "90d";
   const [defaultDates] = useState(() => getDatesForPeriod(periodParam));
+  const from = searchParams.get("from") || defaultDates.from;
+  const to = searchParams.get("to") || defaultDates.to;
 
-  const from = searchParams.get('from') || defaultDates.from;
-  const to = searchParams.get('to') || defaultDates.to;
-
-  const [reportType, setReportType] = useState<ReportType>('summary');
+  const [reportType, setReportType] = useState<ReportType>("summary");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<ReportHistory[]>([]);
+  const [history, setHistory] = useState<ReportHistoryItem[]>([]);
 
-  // Fetch data - always fetch for PDF generation
-  const { data: summary } = useQuery({
-    queryKey: ['analytics-summary', from, to],
-    queryFn: () => apiGet<ProfitOSMetrics>(`/analytics/summary?from=${from}&to=${to}`),
+  // 1. Always fetch summary, winners, cod for preview and PDF
+  const { data: summary, isLoading: summaryLoading } = useQuery({
+    queryKey: queryKeys.analytics.summary({ from, to }),
+    queryFn: () =>
+      apiGet<ProfitOSMetrics>(
+        `/analytics/summary?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+      ),
   });
 
-  const { data: winners } = useQuery({
-    queryKey: ['winners', from, to],
+  const { data: winners = [], isLoading: winnersLoading } = useQuery({
+    queryKey: queryKeys.analytics.winners({ from, to }),
     queryFn: () => apiClient.getWinners(from, to),
   });
 
-  const { data: cod } = useQuery({
-    queryKey: ['cod', from, to],
-    queryFn: () => apiGet<CODAnalyticsResponse>(`/analytics/cod?from=${from}&to=${to}`),
+  const { data: cod, isLoading: codLoading } = useQuery({
+    queryKey: queryKeys.analytics.cod({ from, to }),
+    queryFn: () =>
+      apiGet<CODAnalyticsResponse>(
+        `/analytics/cod?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+      ),
   });
 
-  const { data: expenses } = useQuery({
-    queryKey: ['expenses'],
+  // 2. Fetch expenses and ad-spend when needed
+  const { data: expensesData } = useQuery({
+    queryKey: queryKeys.expenses.list({ from, to }),
     queryFn: () => apiClient.getExpenses(from, to),
-    enabled: reportType === 'complete',
+    enabled: reportType === "expenses" || reportType === "complete",
   });
 
-  const { data: adSpend } = useQuery({
-    queryKey: ['ad-spend'],
-    queryFn: () => apiGet<AdSpendResponse[]>(`/marketing/ad-spend?from=${from}&to=${to}`),
-    enabled: reportType === 'complete',
+  const { data: adSpendData } = useQuery({
+    queryKey: queryKeys.adSpend.list({ from, to }),
+    queryFn: () =>
+      apiGet<AdSpendListResponse>(
+        `/marketing/ad-spend?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+      ),
+    enabled: reportType === "adSpend" || reportType === "complete",
   });
+
+  const expenses: ExpenseResponse[] = expensesData?.data || [];
+  const adSpends: AdSpendResponse[] = adSpendData?.data || [];
 
   const fetchAllOrders = async (): Promise<OrderResponse[]> => {
     const allOrders: OrderResponse[] = [];
@@ -85,10 +102,12 @@ function ReportsContent() {
     const maxPages = 10;
 
     while (page < maxPages) {
-      const queryParams = new URLSearchParams({ limit: '100' });
-      if (cursor) queryParams.set('cursor', cursor);
+      const queryParams = new URLSearchParams({ limit: "100" });
+      if (cursor) queryParams.set("cursor", cursor);
 
-      const response = await apiGet<OrdersListResponse>(`/orders?${queryParams.toString()}`);
+      const response = await apiGet<OrdersListResponse>(
+        `/orders?${queryParams.toString()}`
+      );
       allOrders.push(...response.data);
 
       if (!response.meta.nextCursor) break;
@@ -99,46 +118,82 @@ function ReportsContent() {
     return allOrders;
   };
 
+  const addToHistory = (
+    type: ReportType,
+    format: "csv" | "xlsx" | "pdf",
+    filename: string
+  ) => {
+    const entry: ReportHistoryItem = {
+      id: Date.now().toString(),
+      type,
+      format,
+      timestamp: new Date().toISOString(),
+      filename,
+    };
+    setHistory((prev) => [entry, ...prev]);
+  };
+
+  // CSV Export Handler
   const handleDownloadCSV = async () => {
     setIsGenerating(true);
-    setError(null);
-
     try {
       let rows: string[][] = [];
 
       switch (reportType) {
-        case 'summary':
+        case "summary":
           if (summary && cod) {
             rows = summaryToRows(summary, cod);
           }
           break;
-        case 'orders': {
+        case "orders": {
           const orders = await fetchAllOrders();
           rows = ordersToRows(orders);
           break;
         }
-        case 'winners':
-          if (winners) {
-            rows = winnersToRows(winners);
-          }
+        case "adSpend":
+          rows = adSpendToRows(adSpends);
           break;
-        case 'cod':
+        case "expenses":
+          rows = expensesToRows(expenses);
+          break;
+        case "winners":
+          rows = winnersToRows(winners);
+          break;
+        case "cod":
           if (cod) {
             rows = [
-              ['Indicateur', 'Valeur'],
-              ['Encaissements Attendus', (cod.summary.expectedCashCollectionsMillimes / 1000).toFixed(2)],
-              ['Virements Reçus', (cod.summary.bankWireSettledMillimes / 1000).toFixed(2)],
-              ['En Attente', (cod.summary.pendingCourierPayoutsMillimes / 1000).toFixed(2)],
+              ["Indicateur", "Montant (TND)"],
+              [
+                "Encaissements Attendus",
+                (cod.summary.expectedCashCollectionsMillimes / 1000).toFixed(2),
+              ],
+              [
+                "Virements Reçus",
+                (cod.summary.bankWireSettledMillimes / 1000).toFixed(2),
+              ],
+              [
+                "En Attente Transporteur",
+                (cod.summary.pendingCourierPayoutsMillimes / 1000).toFixed(2),
+              ],
             ];
           }
           break;
-        case 'complete': {
+        case "complete": {
           const orders = await fetchAllOrders();
           rows = [
-            ...summaryToRows(summary!, cod!),
-            [''],
-            ['=== COMMANDES ==='],
+            ...(summary && cod ? summaryToRows(summary, cod) : []),
+            [""],
+            ["=== COMMANDES ==="],
             ...ordersToRows(orders),
+            [""],
+            ["=== PUBLICITÉ ==="],
+            ...adSpendToRows(adSpends),
+            [""],
+            ["=== CHARGES FIXES ==="],
+            ...expensesToRows(expenses),
+            [""],
+            ["=== PODIUM ==="],
+            ...winnersToRows(winners),
           ];
           break;
         }
@@ -146,73 +201,98 @@ function ReportsContent() {
 
       const filename = generateCSVFilename(reportType);
       downloadCSV(filename, rows);
-
-      addToHistory(reportType, 'csv', filename);
+      addToHistory(reportType, "csv", filename);
+      success(`Rapport "${filename}" téléchargé avec succès !`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la génération');
+      toastError(
+        err instanceof Error ? err.message : "Erreur lors de la génération CSV"
+      );
     } finally {
       setIsGenerating(false);
     }
   };
 
+  // XLSX Export Handler
   const handleDownloadXLSX = async () => {
     setIsGenerating(true);
-    setError(null);
-
     try {
       const sheets: { name: string; rows: string[][] }[] = [];
 
-      if (reportType === 'complete') {
-        if (summary && cod) sheets.push({ name: 'Résumé', rows: summaryToRows(summary, cod) });
-
+      if (reportType === "complete") {
+        if (summary && cod)
+          sheets.push({ name: "Résumé P&L", rows: summaryToRows(summary, cod) });
         const orders = await fetchAllOrders();
-        sheets.push({ name: 'Commandes', rows: ordersToRows(orders) });
-
-        if (adSpend) sheets.push({ name: 'Publicité', rows: adSpendToRows(adSpend) });
-        if (expenses?.data) sheets.push({ name: 'Charges', rows: expensesToRows(expenses.data) });
-        if (winners) sheets.push({ name: 'Winners', rows: winnersToRows(winners) });
+        sheets.push({ name: "Commandes", rows: ordersToRows(orders) });
+        sheets.push({ name: "Publicité", rows: adSpendToRows(adSpends) });
+        sheets.push({ name: "Charges", rows: expensesToRows(expenses) });
+        sheets.push({ name: "Podium", rows: winnersToRows(winners) });
         if (cod) {
-          const codRows = [
-            ['Indicateur', 'Valeur'],
-            ['Encaissements Attendus', (cod.summary.expectedCashCollectionsMillimes / 1000).toFixed(2)],
-            ['Virements Reçus', (cod.summary.bankWireSettledMillimes / 1000).toFixed(2)],
-            ['En Attente', (cod.summary.pendingCourierPayoutsMillimes / 1000).toFixed(2)],
-          ];
-          sheets.push({ name: 'COD', rows: codRows });
+          sheets.push({
+            name: "COD",
+            rows: [
+              ["Indicateur", "Valeur (TND)"],
+              [
+                "Encaissements Attendus",
+                (cod.summary.expectedCashCollectionsMillimes / 1000).toFixed(2),
+              ],
+              [
+                "Virements Reçus",
+                (cod.summary.bankWireSettledMillimes / 1000).toFixed(2),
+              ],
+              [
+                "En Attente Transporteur",
+                (cod.summary.pendingCourierPayoutsMillimes / 1000).toFixed(2),
+              ],
+            ],
+          });
         }
       } else {
-        // Single sheet
         let rows: string[][] = [];
-        let name = 'Rapport';
+        let name = "Rapport";
 
         switch (reportType) {
-          case 'summary':
+          case "summary":
             if (summary && cod) {
               rows = summaryToRows(summary, cod);
-              name = 'Résumé';
+              name = "Résumé P&L";
             }
             break;
-          case 'orders': {
+          case "orders": {
             const orders = await fetchAllOrders();
             rows = ordersToRows(orders);
-            name = 'Commandes';
+            name = "Commandes";
             break;
           }
-          case 'winners':
-            if (winners) {
-              rows = winnersToRows(winners);
-              name = 'Winners';
-            }
+          case "adSpend":
+            rows = adSpendToRows(adSpends);
+            name = "Publicité";
             break;
-          case 'cod':
+          case "expenses":
+            rows = expensesToRows(expenses);
+            name = "Charges Fixes";
+            break;
+          case "winners":
+            rows = winnersToRows(winners);
+            name = "Podium";
+            break;
+          case "cod":
             if (cod) {
               rows = [
-                ['Indicateur', 'Valeur'],
-                ['Encaissements Attendus', (cod.summary.expectedCashCollectionsMillimes / 1000).toFixed(2)],
-                ['Virements Reçus', (cod.summary.bankWireSettledMillimes / 1000).toFixed(2)],
-                ['En Attente', (cod.summary.pendingCourierPayoutsMillimes / 1000).toFixed(2)],
+                ["Indicateur", "Valeur (TND)"],
+                [
+                  "Encaissements Attendus",
+                  (cod.summary.expectedCashCollectionsMillimes / 1000).toFixed(2),
+                ],
+                [
+                  "Virements Reçus",
+                  (cod.summary.bankWireSettledMillimes / 1000).toFixed(2),
+                ],
+                [
+                  "En Attente Transporteur",
+                  (cod.summary.pendingCourierPayoutsMillimes / 1000).toFixed(2),
+                ],
               ];
-              name = 'COD';
+              name = "COD";
             }
             break;
         }
@@ -222,22 +302,25 @@ function ReportsContent() {
 
       const filename = generateXLSXFilename(reportType);
       await downloadXLSX(filename, sheets);
-
-      addToHistory(reportType, 'xlsx', filename);
+      addToHistory(reportType, "xlsx", filename);
+      success(`Classeur Excel "${filename}" téléchargé avec succès !`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la génération');
+      toastError(
+        err instanceof Error ? err.message : "Erreur lors de la génération XLSX"
+      );
     } finally {
       setIsGenerating(false);
     }
   };
 
+  // PDF Export Handler
   const handleDownloadPDF = async () => {
     setIsGenerating(true);
-    setError(null);
-
     try {
       if (!summary || !cod || !winners) {
-        throw new Error('Données manquantes pour générer le PDF');
+        throw new Error(
+          "Données incomplètes pour générer le rapport PDF. Attendez la fin du chargement."
+        );
       }
 
       const filename = generatePDFFilename(reportType);
@@ -248,147 +331,117 @@ function ReportsContent() {
         winners,
       });
 
-      addToHistory(reportType, 'pdf', filename);
+      addToHistory(reportType, "pdf", filename);
+      success(`Document PDF "${filename}" téléchargé avec succès !`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la génération');
+      toastError(
+        err instanceof Error ? err.message : "Erreur lors de la génération PDF"
+      );
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const addToHistory = (type: ReportType, format: 'csv' | 'xlsx' | 'pdf', filename: string) => {
-    const entry: ReportHistory = {
-      id: Date.now().toString(),
-      type,
-      format,
-      timestamp: new Date().toISOString(),
-      filename,
-    };
-    setHistory((prev) => [entry, ...prev]);
-  };
-
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 pb-20 md:pb-8">
-      <ProfitOSSubNav />
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <ProfitOSContainer>
+      {/* Header with Dashboard PeriodPicker */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-ink">Rapports</h1>
-          <p className="text-sm text-ink-muted mt-1">
-            Exportez vos données en CSV, XLSX ou PDF
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Centre de Rapports & Exports
+          </h1>
+          <p className="text-xs text-muted">
+            Exportez vos données opérationnelles et financières en CSV, Excel (XLSX) ou PDF
           </p>
         </div>
         <PeriodPicker />
       </div>
 
-      {/* Configuration */}
-      <div className="bg-layer-2 rounded-lg p-6 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-ink mb-2">Type de rapport</label>
-          <select
-            value={reportType}
-            onChange={(e) => setReportType(e.target.value as ReportType)}
-            className="w-full px-4 py-2 bg-layer-1 border border-border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="summary">Résumé P&L</option>
-            <option value="orders">Commandes</option>
-            <option value="winners">Winners</option>
-            <option value="cod">COD</option>
-            <option value="complete">Rapport Complet</option>
-          </select>
-        </div>
+      {/* Shared Sub-Navigation */}
+      <ProfitOSSubNav />
 
-        {/* Actions */}
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={handleDownloadCSV}
-            disabled={isGenerating}
-            className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <FileText className="w-4 h-4" />
-            <span>Télécharger CSV</span>
-          </button>
+      {/* 1. Card Grid for Report Selection */}
+      <ReportTypeCardGrid
+        selectedType={reportType}
+        onSelectType={setReportType}
+      />
 
-          <button
-            onClick={handleDownloadXLSX}
-            disabled={isGenerating}
-            className="flex items-center gap-2 px-4 py-2 bg-positive-emerald text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>Télécharger XLSX</span>
-          </button>
+      {/* 2. Key Figures Preview Before Download */}
+      <ReportFiguresPreview
+        reportType={reportType}
+        summary={summary}
+        cod={cod}
+        winners={winners}
+        expenses={expenses}
+        adSpends={adSpends}
+        isLoading={summaryLoading || codLoading || winnersLoading}
+      />
 
-          <button
-            onClick={handleDownloadPDF}
-            disabled={isGenerating || reportType === 'orders'}
-            className="flex items-center gap-2 px-4 py-2 bg-negative-red text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <FileDown className="w-4 h-4" />
-            <span>Télécharger PDF</span>
-          </button>
-        </div>
-
-        {/* Progress */}
-        {isGenerating && (
-          <div className="flex items-center gap-2 text-sm text-ink-muted">
-            <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-            <span>Génération en cours...</span>
+      {/* 3. Export Action Center */}
+      <Card className="p-5 sm:p-6 space-y-4 border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base font-bold text-foreground">
+              Télécharger le rapport
+            </h3>
+            <p className="text-xs text-muted">
+              Choisissez le format d&apos;export adapté à votre besoin
+            </p>
           </div>
-        )}
 
-        {/* Error */}
-        {error && (
-          <div className="p-4 bg-negative-tint border border-negative-border rounded-lg">
-            <p className="text-sm text-negative-red">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="mt-2 text-sm text-negative-red underline hover:no-underline"
+          {/* Consistent, Visible Export Buttons (zero white-on-white text) */}
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={handleDownloadCSV}
+              disabled={isGenerating}
+              className="gap-2 font-medium"
             >
-              Réessayer
-            </button>
+              <FileText className="w-4 h-4 text-foreground" />
+              <span>Exporter CSV</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={handleDownloadXLSX}
+              disabled={isGenerating}
+              className="gap-2 font-medium border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>Exporter Excel (XLSX)</span>
+            </Button>
+
+            <Button
+              variant="brand"
+              onClick={handleDownloadPDF}
+              disabled={isGenerating || reportType === "orders"}
+              className="gap-2 font-bold shadow-xs"
+              title={
+                reportType === "orders"
+                  ? "Utilisez CSV ou XLSX pour le grand livre des commandes"
+                  : undefined
+              }
+            >
+              <FileDown className="w-4 h-4" />
+              <span>Générer PDF</span>
+            </Button>
+          </div>
+        </div>
+
+        {isGenerating && (
+          <div className="flex items-center gap-2 pt-2 text-xs font-mono text-muted animate-pulse">
+            <Loader2 className="w-4 h-4 animate-spin text-brand-lime-text" />
+            <span>Compilation et génération du fichier en cours...</span>
           </div>
         )}
-      </div>
+      </Card>
 
-      {/* History */}
-      {history.length > 0 && (
-        <div className="bg-layer-2 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-ink mb-4">Historique</h2>
-          <div className="space-y-2">
-            {history.map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-center justify-between p-3 bg-layer-3 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <Download className="w-4 h-4 text-ink-muted" />
-                  <div>
-                    <p className="text-sm font-medium text-ink">{entry.filename}</p>
-                    <p className="text-xs text-ink-muted">
-                      {new Date(entry.timestamp).toLocaleString('fr-FR')}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-xs font-mono text-ink-muted uppercase">
-                  {entry.format}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {history.length === 0 && !isGenerating && !error && (
-        <div className="bg-layer-2 rounded-lg p-12 text-center">
-          <FileText className="w-12 h-12 text-ink-muted mx-auto mb-4" />
-          <p className="text-ink-muted">
-            Sélectionnez un type de rapport et un format pour commencer
-          </p>
-        </div>
-      )}
-    </div>
+      {/* 4. In-Memory Session Download History */}
+      <ReportHistoryList
+        history={history}
+        onClearHistory={() => setHistory([])}
+      />
+    </ProfitOSContainer>
   );
 }
 
@@ -396,10 +449,14 @@ export default function ReportsPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-6 space-y-6 animate-pulse">
-          <div className="h-10 bg-layer-3 rounded w-1/3" />
-          <div className="h-64 bg-layer-2 rounded-lg" />
-        </div>
+        <ProfitOSContainer>
+          <div className="space-y-6 animate-pulse">
+            <div className="h-8 bg-surface-subtle rounded w-1/4" />
+            <div className="h-12 bg-surface-subtle rounded-2xl w-full" />
+            <div className="h-48 bg-surface-subtle rounded-2xl w-full" />
+            <div className="h-32 bg-surface-subtle rounded-2xl w-full" />
+          </div>
+        </ProfitOSContainer>
       }
     >
       <ReportsContent />
