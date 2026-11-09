@@ -162,10 +162,22 @@ export function Sidebar({
           <nav className="space-y-1">
             {MAIN_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
+              const isProfitOSRoute = [
+                "/dashboard/profit-os",
+                "/orders",
+                "/costs",
+                "/cod",
+                "/winners",
+                "/simulator",
+                "/reports",
+              ].some((route) => pathname === route || pathname.startsWith(`${route}/`));
+
               const isActive =
-                pathname === item.href ||
-                (item.href !== "/dashboard/overview" &&
-                  pathname.startsWith(item.href));
+                item.href === "/dashboard/profit-os"
+                  ? isProfitOSRoute
+                  : pathname === item.href ||
+                    (item.href !== "/dashboard/overview" &&
+                      pathname.startsWith(item.href));
 
               const linkContent = (
                 <Link

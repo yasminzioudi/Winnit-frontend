@@ -3,10 +3,10 @@ import { DashboardShell } from "@/components/layout/DashboardShell";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export const metadata = {
-  title: "WINNIT OS — Coûts & Dépenses",
+  title: "WINNIT OS — Profit OS",
 };
 
-export default function CostsLayout({
+export default function DashboardGroupLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -17,4 +17,3 @@ export default function CostsLayout({
     </AuthGuard>
   );
 }
-

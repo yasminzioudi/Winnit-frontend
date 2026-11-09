@@ -7,6 +7,7 @@ import { apiGet } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { OrdersListResponse } from "@/lib/api/types";
 import { ProfitOSSubNav } from "@/components/profit-os/SubNav";
+import { ProfitOSContainer } from "@/components/profit-os/ProfitOSContainer";
 import { OrderFilters } from "@/components/orders/OrderFilters";
 import { OrdersTable } from "@/components/orders/OrdersTable";
 import { CreateOrderDrawer } from "@/components/orders/CreateOrderDrawer";
@@ -42,14 +43,14 @@ function OrdersPageContent() {
   const orders = ordersQuery.data?.data || [];
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 pb-20 md:pb-8">
+    <ProfitOSContainer>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Gestion des Commandes
           </h1>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs text-muted">
             Grand livre des commandes, calcul unitaire net et transitions de statuts
           </p>
         </div>
@@ -94,7 +95,7 @@ function OrdersPageContent() {
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
       />
-    </div>
+    </ProfitOSContainer>
   );
 }
 

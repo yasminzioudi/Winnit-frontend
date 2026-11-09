@@ -61,7 +61,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
       {/* Main Content Area */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-200 ${
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ${
           isCollapsed
             ? "lg:pl-[76px]"
             : "lg:pl-[290px] xl:pl-[300px]"
@@ -72,7 +72,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
         />
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto animate-in fade-in duration-150">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto min-w-0 animate-in fade-in duration-150">
           {children}
         </main>
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, Suspense } from "react";
 import { ProfitOSSubNav } from "@/components/profit-os/SubNav";
+import { ProfitOSContainer } from "@/components/profit-os/ProfitOSContainer";
 import { AdSpendTab } from "@/components/costs/AdSpendTab";
 import { ExpensesTab } from "@/components/costs/ExpensesTab";
 import { RoasBreakEvenCard } from "@/components/costs/RoasBreakEvenCard";
@@ -10,13 +11,13 @@ function CostsPageContent() {
   const [activeTab, setActiveTab] = useState<"adspend" | "expenses">("adspend");
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 pb-20 md:pb-8">
+    <ProfitOSContainer>
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           Gestion des Coûts
         </h1>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        <p className="text-xs text-muted">
           Publicité, charges fixes et seuil de rentabilité ROAS
         </p>
       </div>
@@ -28,13 +29,13 @@ function CostsPageContent() {
       <RoasBreakEvenCard />
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-neutral-200 dark:border-neutral-800">
+      <div className="flex gap-2 border-b border-border">
         <button
           onClick={() => setActiveTab("adspend")}
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === "adspend"
               ? "text-primary border-b-2 border-primary"
-              : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+              : "text-muted hover:text-foreground"
           }`}
         >
           Publicité
@@ -44,7 +45,7 @@ function CostsPageContent() {
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === "expenses"
               ? "text-primary border-b-2 border-primary"
-              : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+              : "text-muted hover:text-foreground"
           }`}
         >
           Charges fixes
@@ -53,7 +54,7 @@ function CostsPageContent() {
 
       {/* Tab Content */}
       {activeTab === "adspend" ? <AdSpendTab /> : <ExpensesTab />}
-    </div>
+    </ProfitOSContainer>
   );
 }
 

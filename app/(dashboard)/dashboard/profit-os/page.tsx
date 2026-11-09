@@ -14,6 +14,7 @@ import type {
   CODAnalyticsResponse,
 } from "@/lib/api/types";
 import { PeriodPicker, getDatesForPeriod, type PeriodKey } from "@/components/profit-os/PeriodPicker";
+import { ProfitOSContainer } from "@/components/profit-os/ProfitOSContainer";
 import { ProfitOSSubNav } from "@/components/profit-os/SubNav";
 import { KpiTiles } from "@/components/profit-os/KpiTiles";
 import { WaterfallChart } from "@/components/profit-os/WaterfallChart";
@@ -81,11 +82,11 @@ function ProfitOSDashboardContent() {
 
   if (summaryQuery.isError) {
     return (
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      <ProfitOSContainer>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Profit OS</h1>
-            <p className="text-xs text-neutral-500">Rentabilité réelle & grand livre par commande</p>
+            <p className="text-xs text-muted">Rentabilité réelle & grand livre par commande</p>
           </div>
           <PeriodPicker />
         </div>
@@ -101,19 +102,19 @@ function ProfitOSDashboardContent() {
             codQuery.refetch();
           }}
         />
-      </div>
+      </ProfitOSContainer>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 pb-20 md:pb-8">
+    <ProfitOSContainer>
       {/* Header bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Profit OS
           </h1>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs text-muted">
             Économie unitaire réelle, flux COD et cascade de rentabilité
           </p>
         </div>
@@ -143,7 +144,7 @@ function ProfitOSDashboardContent() {
         <MiniLeaderboard winners={winnersQuery.data} isLoading={winnersQuery.isLoading} />
         <CodCashCard data={codQuery.data} isLoading={codQuery.isLoading} />
       </div>
-    </div>
+    </ProfitOSContainer>
   );
 }
 
